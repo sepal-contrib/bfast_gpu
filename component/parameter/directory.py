@@ -6,4 +6,6 @@ from pathlib import Path
 module_dir = Path('~','module_results').expanduser()
 module_dir.mkdir(exist_ok=True)
 
-# add all the directory that will be used in the app. 
+# downloads directory where all SEPAL time series live
+down_dir = Path('~', 'downloads').expanduser()
+down_dir.mkdir(exist_ok=True)
