@@ -15,12 +15,22 @@ class BfastTile(sw.Tile):
         self.folder = cw.FolderSelect()
         self.out_dir = cw.OutDirSelect()
         self.tiles = cw.TilesSelect()
+        self.harmonics = v.Select(label=cm.widget.harmonic.label, v_model=None, items=[i for i in range(3,11)])
+        self.freq = v.Slider(label=cm.widget.freq.label, v_model = None, min=1, max=365, thumb_label="always", class_='mt-5')
+        self.trend = v.Switch(v_model=False, label=cm.widget.trend.label)
+        self.bandwidth = v.Slider(label=cm.widget.bandwidth.label, v_model=None, step=.01, max=1.00, thumb_label="always", class_='mt-5')
+        self.significance = v.Slider(label=cm.widget.significance.label, v_model=None, step=.001, max=1.000, thumb_label="always", class_='mt-5')
+        self.backend = cw.BackendSelect()
         
         # create the tile 
         super().__init__(
             "BFAST_tile",
             cm.bfast.title,
-            inputs=[self.folder, self.out_dir, self.tiles],
+            inputs=[
+                self.folder, self.out_dir, self.tiles,
+                v.Divider(),
+                self.harmonics, self.freq, self.trend, self.bandwidth, self.significance, self.backend
+            ],
             output=sw.Alert(),
             btn=sw.Btn(cm.bfast.btn)
         

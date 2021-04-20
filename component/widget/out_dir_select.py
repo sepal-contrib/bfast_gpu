@@ -14,6 +14,7 @@ class OutDirSelect(sw.SepalWidget, v.TextField):
         self.label=cm.widget.out_dir.label
         self.readonly=True
         self.hint=cm.widget.out_dir.hint
+        self.class_="mb-2"
         #self.persistent_hint=True
         
         # create the widget
