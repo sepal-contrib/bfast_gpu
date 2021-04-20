@@ -3,3 +3,5 @@
 
 # if you use a module import all the functions here to only have 1 call to make
 from .folder_select import *
+from .out_dir_select import *
+from .tiles_select import *

@@ -3,12 +3,13 @@ from pathlib import Path
 from sepal_ui import sepalwidgets as sw 
 
 from component import parameter as cp
+from component.message import cm
 
 class FolderSelect(sw.FileInput):
     
     def __init__(self):
         
-        super().__init__([''], label="Select Folder", folder=cp.down_dir)
+        super().__init__([''], label=cm.widget.folder.label, folder=cp.down_dir)
         
     def _on_file_select(self, change):
         """Dispatch the behaviour between file selection and folder change"""
@@ -25,3 +26,22 @@ class FolderSelect(sw.FileInput):
             self._change_folder()            
             
         return self
+    
+    def is_valid_ts(self):
+        """Check if the current folder is a SEPAL generated time series folder"""
+        
+        folder = Path(self.v_model)
+        
+        valid = True
+        dirs = [d for d in folder.glob('*/')]
+        if len(dirs) == 0: 
+            valid = False
+        else:
+            for d in dirs:
+                try:
+                    n = int(d.stem)
+                except:
+                    valid = False
+                    break
+        
+        return valid

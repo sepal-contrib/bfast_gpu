@@ -6,5 +6,23 @@
         "drawer_item": {
             "about": "About"
         }
+    },
+    "widget": {
+        "folder": {
+            "label": "Select Folder",
+            "no_ts": "the folder {} is not a valid SEPAL time series folder. please select a valid Time series folder",
+            "valid_ts": "using the {} time series folder" 
+        },
+        "tiles": {
+            "label": "Select the tiles to use"
+        },
+        "out_dir": {
+            "label": "Output directory",
+            "hint": "The output directory will be created automatically based on the parameters and the basemname of your time series"
+        }
+    },
+    "bfast": {
+        "title": "Select process parameters",
+        "btn": "Launch BFAST analysis"
     }
 }
