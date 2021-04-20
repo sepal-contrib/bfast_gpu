@@ -1,0 +1,10 @@
+{
+    "not_translated": "this message only exist in the en dict",
+    "app": {
+        "title": "BFAST GPU",
+        "footer": "The sky is the limit \u00a9 {}",
+        "drawer_item": {
+            "about": "About"
+        }
+    }
+}

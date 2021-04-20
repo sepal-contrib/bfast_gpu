@@ -1,0 +1,9 @@
+{
+    "app": {
+        "title": "BFAST GPU",
+        "footer": "vers l'infini et au-del\u00e0 \u00a9 {}",
+        "drawer_item": {
+            "about": "A propos"
+        }
+    }
+}
