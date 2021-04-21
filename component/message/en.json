@@ -29,15 +29,21 @@
         "trend": {
             "label": "Add trend"
         },
-        "bandwidth": {
+        "hfrac": {
             "label": "Bandwidth relative to sample size"
         },
-        "significance": {
+        "level": {
             "label": "Significance level of the monitoring"
         },
         "backend": {
             "label": "Backend",
             "hint": "If you want to use the GPU backend please change your instance setting for a GPU one and restart this application"
+        },
+        "monitoring": {
+            "label": "Select the monitoring date range:"
+        },
+        "history": {
+            "label": "Start history period:"
         }
     },
     "bfast": {

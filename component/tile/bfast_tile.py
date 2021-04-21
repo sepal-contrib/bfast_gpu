@@ -15,12 +15,14 @@ class BfastTile(sw.Tile):
         self.folder = cw.FolderSelect()
         self.out_dir = cw.OutDirSelect()
         self.tiles = cw.TilesSelect()
-        self.harmonics = v.Select(label=cm.widget.harmonic.label, v_model=None, items=[i for i in range(3,11)])
+        self.poly = v.Select(label=cm.widget.harmonic.label, v_model=None, items=[i for i in range(3,11)])
         self.freq = v.Slider(label=cm.widget.freq.label, v_model = None, min=1, max=365, thumb_label="always", class_='mt-5')
         self.trend = v.Switch(v_model=False, label=cm.widget.trend.label)
-        self.bandwidth = v.Slider(label=cm.widget.bandwidth.label, v_model=None, step=.01, max=1.00, thumb_label="always", class_='mt-5')
-        self.significance = v.Slider(label=cm.widget.significance.label, v_model=None, step=.001, max=1.000, thumb_label="always", class_='mt-5')
+        self.hfrac = v.Slider(label=cm.widget.hfrac.label, v_model=None, step=.01, max=1.00, thumb_label="always", class_='mt-5')
+        self.level = v.Slider(label=cm.widget.level.label, v_model=None, step=.001, max=1.000, thumb_label="always", class_='mt-5')
         self.backend = cw.BackendSelect()
+        self.monitoring = cw.DateRangeSlider(label=cm.widget.monitoring.label)
+        self.history = cw.DateSlider(label=cm.widget.history.label)
         
         # create the tile 
         super().__init__(
@@ -29,7 +31,10 @@ class BfastTile(sw.Tile):
             inputs=[
                 self.folder, self.out_dir, self.tiles,
                 v.Divider(),
-                self.harmonics, self.freq, self.trend, self.bandwidth, self.significance, self.backend
+                self.poly, self.freq, self.trend, self.hfrac, self.level, self.backend,
+                v.Divider(),
+                self.monitoring, self.history
+                
             ],
             output=sw.Alert(),
             btn=sw.Btn(cm.bfast.btn)
@@ -54,7 +59,15 @@ class BfastTile(sw.Tile):
         
         # check if it's a time series folder 
         if not self.folder.is_valid_ts():
+            
+            # reset the non working inputs 
+            self.monitoring.disable()
+            self.history.disable()
+            self.tiles.reset()
+            
+            # display a message to the end user
             self.output.add_msg(cm.widget.folder.no_ts.format(folder), 'warning')
+            
             return self
         
         # set the basename
@@ -62,6 +75,14 @@ class BfastTile(sw.Tile):
         
         # set the items in the dropdown 
         self.tiles.set_items(folder)
+        
+        # set the dates for the sliders 
+        # we consider that the dates are consistent through all the folders so we can use only the first one
+        with (folder/'0'/'dates.csv').open() as f:
+            dates = f.read().split('\n')
+            
+        self.monitoring.set_dates(dates)
+        self.history.set_dates(dates)
         
         self.output.add_msg(cm.widget.folder.valid_ts.format(folder))
         
