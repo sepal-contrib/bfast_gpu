@@ -27,12 +27,12 @@ class BfastTile(sw.Tile):
         # create the tile 
         super().__init__(
             "BFAST_tile",
-            cm.bfast.title,
+            cm.bfast.folder, # the title is used to describe the first section 
             inputs=[
                 self.folder, self.out_dir, self.tiles,
-                v.Divider(),
+                v.Html(tag="h2", children=[cm.bfast.process]),
                 self.poly, self.freq, self.trend, self.hfrac, self.level, self.backend,
-                v.Divider(),
+                v.Html(tag="h2", children=[cm.bfast.periods]),
                 self.monitoring, self.history
                 
             ],
@@ -43,6 +43,41 @@ class BfastTile(sw.Tile):
         
         # add js behaviour 
         self.folder.observe(self._on_folder_change, 'v_model')
+        self.btn.on_event('click', self._start_process)
+        
+    def _start_process(self, widget, event, data):
+        """start the bfast process"""
+        
+        widget.toggle_loading()
+        
+        # gather all the variables for conveniency
+        folder = self.folder.v_model
+        out_dir = self.out_dir.v_model
+        tiles = self.tiles.v_model
+        poly = self.poly.v_model
+        freq = self.freq.v_model
+        trend = self.trend.v_model
+        hfrac = self.hfrac.v_model
+        level = self.level.v_model
+        backend = self.backend.v_model
+        monitoring = self.monitoring.v_model
+        history = self.history.v_model
+        
+        # check the inputs 
+        if not self.output.check_input(folder, cm.widget.folder.no_folder): return widget.toggle_loading()
+        if not self.output.check_input(out_dir, cm.widget.out_dir.no_dir): return widget.toggle_loading()
+        if not self.output.check_input(tiles, cm.widget.tiles.no_tiles): return widget.toggle_loading()
+        if not self.output.check_input(poly, cm.widget.harmonic.no_poly): return widget.toggle_loading()
+        if not self.output.check_input(freq, cm.widget.freq.no_freq): return widget.toggle_loading()
+        if not self.output.check_input(trend, cm.widget.trend.no_trend): return widget.toggle_loading()
+        if not self.output.check_input(hfrac, cm.widget.hfrac.no_frac): return widget.toggle_loading()
+        if not self.output.check_input(level, cm.widget.level.no_level): return widget.toggle_loading()
+        if not self.output.check_input(backend, cm.widget.backend.no_backend): return widget.toggle_loading()
+        if not self.output.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
+        if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()       
+        
+        
+        widget.toggle_loading()
         
     def _on_folder_change(self, change):
         """

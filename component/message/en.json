@@ -11,43 +11,56 @@
         "folder": {
             "label": "Select Folder",
             "no_ts": "the folder {} is not a valid SEPAL time series folder. please select a valid Time series folder",
-            "valid_ts": "using the {} time series folder" 
+            "valid_ts": "using the {} time series folder",
+            "no_folder": "No folder have been selected"
         },
         "tiles": {
-            "label": "Select the tiles to use"
+            "label": "Select the tiles to use",
+            "no_tiles": "No tiles have been selected"
         },
         "out_dir": {
             "label": "Output directory",
-            "hint": "The output directory will be created automatically based on the parameters and the basemname of your time series"
+            "hint": "The output directory will be created automatically based on the parameters and the basemname of your time series",
+            "no_dir": "No name have been provided for the output directory"
         },
         "harmonic": {
-            "label": "Number of Harmonics"
+            "label": "Number of Harmonics",
+            "no_poly": "no harmonic degree have been provided"
         },
         "freq": {
-            "label": "frequency of seasonal model (days)"
+            "label": "frequency of seasonal model (days)",
+            "no_freq": "No frequency for seasonal model have been provided"
         },
         "trend": {
-            "label": "Add trend"
+            "label": "Add trend",
+            "no_trend": "No trend have been provided"
         },
         "hfrac": {
-            "label": "Bandwidth relative to sample size"
+            "label": "Bandwidth relative to sample size",
+            "no_frac": "No bandwith have been provided"
         },
         "level": {
-            "label": "Significance level of the monitoring"
+            "label": "Significance level of the monitoring",
+            "no_level": "No significance level have been provided"
         },
         "backend": {
             "label": "Backend",
-            "hint": "If you want to use the GPU backend please change your instance setting for a GPU one and restart this application"
+            "hint": "If you want to use the GPU backend please change your instance setting for a GPU one and restart this application",
+            "no_backend": "No backend is provided"
         },
         "monitoring": {
-            "label": "Select the monitoring date range:"
+            "label": "Select the monitoring date range:",
+            "no_dates": "No range of monitoring have been provided"
         },
         "history": {
-            "label": "Start history period:"
+            "label": "Start history period:",
+            "no_date": "No start date of history period have been provided"
         }
     },
     "bfast": {
-        "title": "Select process parameters",
+        "folder": "Select your timeseries folder",
+        "process": "Select process parameters",
+        "periods": "Select the time periods",
         "btn": "Launch BFAST analysis"
     }
 }
