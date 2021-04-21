@@ -63,6 +63,8 @@
         "folder": "Select your timeseries folder",
         "process": "Select process parameters",
         "periods": "Select the time periods",
-        "btn": "Launch BFAST analysis"
+        "btn": "Launch BFAST analysis",
+        "sum_up": "Process {} windows in tile {}",
+        "complete": "BFAST Output saved in: \"{}\""
     }
 }

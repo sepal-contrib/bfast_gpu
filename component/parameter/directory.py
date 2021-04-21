@@ -6,6 +6,9 @@ from pathlib import Path
 module_dir = Path('~','module_results').expanduser()
 module_dir.mkdir(exist_ok=True)
 
+result_dir = module_dir/'bfast'
+result_dir.mkdir(exist_ok=True)
+
 # downloads directory where all SEPAL time series live
 down_dir = Path('~', 'downloads').expanduser()
 down_dir.mkdir(exist_ok=True)

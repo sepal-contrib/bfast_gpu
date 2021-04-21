@@ -78,8 +78,7 @@ class DateRangeSlider(sw.SepalWidget, v.Flex):
         
         # set the slider 
         self.range.max = len(dates)-1
-        self.range.v_model = [0, self.range.max]
-        # display and self.v_model are automatically updated
+        self.range.v_model = [0, len(dates)-1]
         
         # activate the slider 
         self.range.disabled = False

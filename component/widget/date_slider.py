@@ -78,7 +78,6 @@ class DateSlider(sw.SepalWidget, v.Flex):
         # set the slider 
         self.slider.max = len(dates)-1
         self.slider.v_model = 0
-        # display and self.v_model are automatically updated
         
         # activate the slider 
         self.slider.disabled = False

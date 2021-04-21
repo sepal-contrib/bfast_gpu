@@ -6,6 +6,7 @@ from sepal_ui import sepalwidgets as sw
 
 from component import widget as cw
 from component.message import cm
+from component import scripts as cs
 
 class BfastTile(sw.Tile):
     
@@ -17,10 +18,10 @@ class BfastTile(sw.Tile):
         self.out_dir = cw.OutDirSelect()
         self.tiles = cw.TilesSelect()
         self.poly = v.Select(label=cm.widget.harmonic.label, v_model=None, items=[i for i in range(3,11)])
-        self.freq = v.Slider(label=cm.widget.freq.label, v_model = None, min=1, max=365, thumb_label="always", class_='mt-5')
+        self.freq = v.Slider(label=cm.widget.freq.label, v_model = 365, min=1, max=365, thumb_label="always", class_='mt-5')
         self.trend = v.Switch(v_model=False, label=cm.widget.trend.label)
-        self.hfrac = v.Slider(label=cm.widget.hfrac.label, v_model=None, step=.01, max=1.00, thumb_label="always", class_='mt-5')
-        self.level = v.Slider(label=cm.widget.level.label, v_model=None, step=.001, max=1.000, thumb_label="always", class_='mt-5')
+        self.hfrac = v.Slider(label=cm.widget.hfrac.label, v_model=0, step=.01, max=1, thumb_label="always", class_='mt-5')
+        self.level = v.Slider(label=cm.widget.level.label, v_model=0.95, step=.001, min=0.95, max=1, thumb_label="always", class_='mt-5')
         self.backend = cw.BackendSelect()
         self.monitoring = cw.DateRangeSlider(label=cm.widget.monitoring.label)
         self.history = cw.DateSlider(label=cm.widget.history.label)
@@ -80,13 +81,18 @@ class BfastTile(sw.Tile):
         if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
         
         # check the dates 
+        print(monitoring)
         start_history = datetime.strptime(history, "%Y-%m-%d")
-        start_monitor = datetime.strptime(moitoring[0], "%Y-%m-%d")
-        end_monitor = datetime.strptime(moitoring[1], "%Y-%m-%d")
+        start_monitor = datetime.strptime(monitoring[0], "%Y-%m-%d")
+        end_monitor = datetime.strptime(monitoring[1], "%Y-%m-%d")
         
         if not (start_history < start_monitor < end_monitor):
             self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
+        
+        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
+        
+        self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
         
         widget.toggle_loading()
         
@@ -125,7 +131,7 @@ class BfastTile(sw.Tile):
         # set the dates for the sliders 
         # we consider that the dates are consistent through all the folders so we can use only the first one
         with (folder/'0'/'dates.csv').open() as f:
-            dates = f.read().split('\n')
+            dates = [l for l in f.read().splitlines() if l.rstrip()]
             
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
