@@ -28,7 +28,7 @@ class BfastTile(sw.Tile):
         
         # create the tile 
         super().__init__(
-            "BFAST_tile",
+            "bfast_tile",
             cm.bfast.folder, # the title is used to describe the first section 
             inputs=[
                 self.folder, self.out_dir, self.tiles,
@@ -89,9 +89,16 @@ class BfastTile(sw.Tile):
             self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
         
-        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
+        try:
+            
+            # run the bfast process
+            cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
         
-        self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+            # display the end of computation message
+            self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+            
+        except Exception as e:
+            self.output.add_live_msg(str(e))
         
         widget.toggle_loading()
         

@@ -1,10 +1,9 @@
 {
-    "not_translated": "this message only exist in the en dict",
     "app": {
         "title": "BFAST GPU",
-        "footer": "The sky is the limit \u00a9 {}",
         "drawer_item": {
-            "about": "About"
+            "about": "About",
+            "bfast": "BFAST process"
         }
     },
     "widget": {
@@ -60,7 +59,7 @@
         }
     },
     "bfast": {
-        "folder": "Select your timeseries folder",
+        "folder": "Select time series folder",
         "process": "Select process parameters",
         "periods": "Select the time periods",
         "btn": "Launch BFAST analysis",
