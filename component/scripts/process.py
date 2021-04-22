@@ -66,7 +66,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     return
         
-def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, output):
+def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, out):
     """run the bfast programm using the user parameters and pilot the differnt threads that will be used"""
     
     # prepare parameters for crop as a dict 
@@ -86,20 +86,34 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         'backend': backend
     }
     
+    # create 1 folder for each set of parameter
+    parameter_string = f'{history[:4]}_{monitoring[0][:4]}_{monitoring[1][:4]}_k{k}_f{freq}_t{int(trend)}_h{hfrac}_l{level}'
+    save_dir = cp.result_dir/out_dir/parameter_string
+    save_dir.mkdir(parents=True, exist_ok=True)
+    
     # loop through the tiles 
     for tile in tiles:
         
+        # get the starting time 
+        start = datetime.now()
+        
         # get the segment useful folders 
-        segment_dir = folder/tile
-        save_dir = cp.result_dir/out_dir/tile
-        save_dir.mkdir(parents=True, exist_ok=True)
+        tile_dir = folder/tile
+        tile_save_dir = save_dir/tile
+        tile_save_dir.mkdir(exist_ok=True)
+        
+        # check the logs to see if the tile is already finished 
+        log_file = tile_save_dir/f'tile_{tile}.log'
+        if log_file.is_file():
+            out.add_msg(f'Skipping tile {tile}')
+            continue
         
         # create the locks to avoid data coruption
         read_lock = threading.Lock()
         write_lock = threading.Lock()
 
         # get the profile from the master vrt
-        with rio.open(segment_dir/'stack.vrt', GEOREF_SOURCES='INTERNAL') as src:
+        with rio.open(tile_dir/'stack.vrt', GEOREF_SOURCES='INTERNAL') as src:
             
             profile = src.profile.copy()
             profile.update(
@@ -110,20 +124,20 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         
             # display an tile computation message
             count = sum(1 for _ in src.block_windows())
-            output.add_live_msg(cm.bfast.sum_up.format(count, tile))
+            out.add_live_msg(cm.bfast.sum_up.format(count, tile))
         
             # get the windows
             windows = [w for _, w in src.block_windows()]
             
             # execute the concurent threads and write the results in a dst file 
-            with rio.open(save_dir/'bfast_outputs.tif', 'w', **profile) as dst:
+            with rio.open(tile_save_dir/'bfast_outputs.tif', 'w', **profile) as dst:
                 
                 bfast_params = {
                     'read_lock': read_lock, 
                     'write_lock': write_lock,
                     'src': src,
                     'dst': dst,
-                    'segment_dir': segment_dir, 
+                    'segment_dir': tile_dir, 
                     'monitor_params': monitor_params, 
                     'crop_params': crop_params
                 }
@@ -131,8 +145,23 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                 with tqdm(total=(count)) as progress_bar:
                     with futures.ThreadPoolExecutor(max_workers=4) as executor:
                         executor.map(partial(bfast_window, **bfast_params), windows)
-                #bfast_window(windows[0], **bfast_params)
+        
+        # write in the logs that the tile is finished
+        write_logs(log_file, start, datetime.now())
                         
     return 
+
+def write_logs(log_file, start, end):
+    
+    with log_file.open('w') as f: 
+        f.write("Computation finished!\n")
+        f.write("\n")
+        f.write(f"Computation started on: {start} \n")
+        f.write(f"Computation finished on: {end}\n")
+        f.write("\n")
+        f.write(f"Elapsed time: {end-start}")
+        
+    return
+        
         
         
