@@ -49,12 +49,12 @@
             "no_backend": "No backend is provided"
         },
         "monitoring": {
-            "label": "Select the monitoring date range:",
+            "label": "Monitoring dates:",
             "no_dates": "No range of monitoring have been provided",
             "bad_order": "The provided date does not respect the chronological order: start of history period -> start of monitoring period -> end of monitoring period"
         },
         "history": {
-            "label": "Start history period:",
+            "label": "History start date:",
             "no_date": "No start date of history period have been provided",
             "too_short": "The history period has less than 40 images"
         }
@@ -65,6 +65,8 @@
         "periods": "Select the time periods",
         "btn": "Launch BFAST analysis",
         "sum_up": "Process {} windows in tile {}",
-        "complete": "BFAST Output saved in: \"{}\""
+        "complete": "BFAST Output saved in: \"{}\"",
+        "progress": "Images analysed in Tile {]",
+        "skip": "Skipping tile {}"
     }
 }

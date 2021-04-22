@@ -38,7 +38,7 @@ class BfastTile(sw.Tile):
                 self.monitoring, self.history
                 
             ],
-            output=sw.Alert(),
+            output=cw.CustomAlert(),
             btn=sw.Btn(cm.bfast.btn)
         
         )

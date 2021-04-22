@@ -8,3 +8,4 @@ from .tiles_select import *
 from .backend_select import *
 from .date_slider import *
 from .date_range_slider import *
+from .custom_alert import *

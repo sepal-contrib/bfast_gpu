@@ -7,7 +7,6 @@ import rasterio as rio
 import numpy as np
 from bfast import BFASTMonitor
 from bfast.monitor.utils import crop_data_dates
-from tqdm import tqdm
 
 from component import parameter as cp
 from component.message import cm
@@ -26,7 +25,7 @@ def break_to_decimal_year(idx, dates):
         break_date = dates[idx-1]
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
 
-def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params):
+def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, count, out, tile):
     """TODO"""
     
     # read in a read_lock to avoid duplicate reading and corruption of the data
@@ -63,6 +62,8 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     with write_lock:
         dst.write(monitoring_results, window=window)
+        
+    out.update_progress(count, cm.bfast.progress.format(tile))
     
     return
         
@@ -97,6 +98,9 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # get the starting time 
         start = datetime.now()
         
+        # reset the output 
+        out.reset_progress()
+        
         # get the segment useful folders 
         tile_dir = folder/tile
         tile_save_dir = save_dir/tile
@@ -105,7 +109,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # check the logs to see if the tile is already finished 
         log_file = tile_save_dir/f'tile_{tile}.log'
         if log_file.is_file():
-            out.add_msg(f'Skipping tile {tile}')
+            out.add_msg(cm.bfast.skip.format(tile))
             continue
         
         # create the locks to avoid data coruption
@@ -139,12 +143,14 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                     'dst': dst,
                     'segment_dir': tile_dir, 
                     'monitor_params': monitor_params, 
-                    'crop_params': crop_params
+                    'crop_params': crop_params,
+                    'count': count,
+                    'out': out,
+                    'tile': tile
                 }
                 
-                with tqdm(total=(count)) as progress_bar:
-                    with futures.ThreadPoolExecutor(max_workers=4) as executor:
-                        executor.map(partial(bfast_window, **bfast_params), windows)
+                with futures.ThreadPoolExecutor(max_workers=4) as executor:
+                    executor.map(partial(bfast_window, **bfast_params), windows)
         
         # write in the logs that the tile is finished
         write_logs(log_file, start, datetime.now())
