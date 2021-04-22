@@ -7,9 +7,10 @@ import rasterio as rio
 import numpy as np
 from bfast import BFASTMonitor
 from bfast.monitor.utils import crop_data_dates
-import tqdm
+from tqdm import tqdm
 
 from component import parameter as cp
+from component.message import cm
 
 def break_to_decimal_year(idx, dates):
     """
@@ -25,39 +26,37 @@ def break_to_decimal_year(idx, dates):
         break_date = dates[idx-1]
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
 
-def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, progress_bar):
+def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params):
     """TODO"""
     
     # read in a read_lock to avoid duplicate reading and corruption of the data
     with read_lock:
-        local_time_series = src.read(window=window)
+        data = src.read(window=window).astype(np.int16)
         
-    local_time_series = local_time_series.astype(np.int16)
-    local_time_series[np.isnan(local_time_series)] = 0
+    # replace 
+    #data[np.isnan(data_orig)] = 0
     
     # read the local observation date
     with (segment_dir/'dates.csv').open() as f:
         dates = [datetime.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()]
-            
+        
     # crop the initial data to the used dates
-    croped_local_time_series, croped_dates = crop_data_dates(local_time_series,  dates, **monitor_params)
+    #data, dates = crop_data_dates(data,  dates, **crop_params)
     
     # start the bfast process
     model = BFASTMonitor(**monitor_params)
     
-    #fit the model 
-    model.fit(local_time_series, croped_dates)
+    # fit the model 
+    model.fit(data, dates)
 
     
     # format the results as decimal year (e.g mid 2015 will be 2015.5)
     to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
-    decimal_breaks = to_decimal(model.breaks, croped_dates)
+    decimal_breaks = to_decimal(model.breaks, dates)
     monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
     
     with write_lock:
         dst.write(monitoring_results, window=window)
-    
-    progress_bar.update(1)
     
     return
         
@@ -78,9 +77,11 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         'k': k,
         'hfrac': hfrac,
         'trend': trend,
-        'level': level,
+        'level': 1-level,  # it's an hidden parameter I hate it https://github.com/diku-dk/bfast/issues/23
         'backend': backend
     }
+    
+    print(monitor_params)
     
     # loop through the tiles 
     for tile in tiles:
@@ -114,21 +115,20 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
             # execute the concurent threads and write the results in a dst file 
             with rio.open(save_dir/'bfast_outputs.tif', 'w', **profile) as dst:
                 
+                bfast_params = {
+                    'read_lock': read_lock, 
+                    'write_lock': write_lock,
+                    'src': src,
+                    'dst': dst,
+                    'segment_dir': segment_dir, 
+                    'monitor_params': monitor_params, 
+                    'crop_params': crop_params
+                }
+                
                 with tqdm(total=(count)) as progress_bar:
                     with futures.ThreadPoolExecutor(max_workers=4) as executor:
-                        executor.map(
-                            partial(bfast_window,
-                                read_lock=read_lock, 
-                                write_lock=write_lock,
-                                src=src,
-                                dst=dst,
-                                segment_dir=segment_dir, 
-                                monitor_params=monitor_params, 
-                                crop_params=crop_params, 
-                                progress_bar=progress_bar
-                            ),
-                            windows
-                        )
+                        executor.map(partial(bfast_window, **bfast_params), windows)
+                #bfast_window(windows[0], **bfast_params)
                         
     return 
         

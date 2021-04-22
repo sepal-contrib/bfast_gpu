@@ -1,7 +1,7 @@
 from sepal_ui import sepalwidgets as sw 
 import ipyvuetify as v
 
-class DateRangeSlider(sw.SepalWidget, v.Flex):
+class DateRangeSlider(sw.SepalWidget, v.Layout):
     
     def __init__(self, dates=None, **kwargs):
         
@@ -16,11 +16,7 @@ class DateRangeSlider(sw.SepalWidget, v.Flex):
             disabled = True,
             v_model = [0, 1],
             max=1,
-            class_="ml-5 mr-5 mt-1",
-            v_slots = [{
-                'name': 'append',
-                'children': [self.display]
-            }]
+            class_="pl-5 pr-1 mt-1"
         )
         
         # add the non conventional parameters for customization
@@ -30,9 +26,13 @@ class DateRangeSlider(sw.SepalWidget, v.Flex):
         
         # wrap everything in a layout
         super().__init__(
+            row=True,
             v_model = None,
             xs12=True,
-            children=[self.range]
+            children=[
+                v.Flex(xs9=True, children=[self.range]), 
+                v.Flex(xs3=True, children=[self.display])
+            ]
         )
         
         # link the v_models
