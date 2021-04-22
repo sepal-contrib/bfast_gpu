@@ -80,8 +80,7 @@ class BfastTile(sw.Tile):
         if not self.output.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
         if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
         
-        # check the dates 
-        print(monitoring)
+        # check the dates
         start_history = datetime.strptime(history, "%Y-%m-%d")
         start_monitor = datetime.strptime(monitoring[0], "%Y-%m-%d")
         end_monitor = datetime.strptime(monitoring[1], "%Y-%m-%d")

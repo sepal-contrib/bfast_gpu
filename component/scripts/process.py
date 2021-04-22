@@ -32,16 +32,14 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # read in a read_lock to avoid duplicate reading and corruption of the data
     with read_lock:
         data = src.read(window=window).astype(np.int16)
-        
-    # replace 
-    #data[np.isnan(data_orig)] = 0
+        # all the nan are transformed into 0 by casting don't we want to use np.iinfo.minint16 ? 
     
     # read the local observation date
     with (segment_dir/'dates.csv').open() as f:
         dates = [datetime.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()]
         
     # crop the initial data to the used dates
-    #data, dates = crop_data_dates(data,  dates, **crop_params)
+    data, dates = crop_data_dates(data,  dates, **crop_params)
     
     # start the bfast process
     model = BFASTMonitor(**monitor_params)
@@ -49,10 +47,18 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # fit the model 
     model.fit(data, dates)
 
-    
-    # format the results as decimal year (e.g mid 2015 will be 2015.5)
+    # vectorized fonction to format the results as decimal year (e.g mid 2015 will be 2015.5)
     to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
-    decimal_breaks = to_decimal(model.breaks, dates)
+    
+    # slice the date to narrow it to the monitoring dates
+    start = monitor_params['start_monitor']
+    end = crop_params['end']
+    monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[    
+    
+    # compute the decimal break on the model 
+    decimal_breaks = to_decimal(model.breaks, monitoring_dates)
+    
+    # agregate the results on 2 bands
     monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
     
     with write_lock:
@@ -60,7 +66,6 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     return
         
-
 def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, output):
     """run the bfast programm using the user parameters and pilot the differnt threads that will be used"""
     
@@ -80,8 +85,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         'level': 1-level,  # it's an hidden parameter I hate it https://github.com/diku-dk/bfast/issues/23
         'backend': backend
     }
-    
-    print(monitor_params)
     
     # loop through the tiles 
     for tile in tiles:
