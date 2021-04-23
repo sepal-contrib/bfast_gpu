@@ -26,6 +26,18 @@ class BfastTile(sw.Tile):
         self.monitoring = cw.DateRangeSlider(label=cm.widget.monitoring.label)
         self.history = cw.DateSlider(label=cm.widget.history.label)
         
+        # stack the advance parameters in a expandpanel 
+        advance_params = v.ExpansionPanels(class_='mb-5', popout=True, children=[
+            v.ExpansionPanel(children=[
+                v.ExpansionPanelHeader(children=[cm.widget.advance_params]),
+                v.ExpansionPanelContent(children=[
+                    v.Flex(xs12=True, children=[self.hfrac]),
+                    v.Flex(xs12=True, children=[self.level]),
+                    v.Flex(xs12=True, children=[self.backend])
+                ])
+            ])
+        ])
+        
         # create the tile 
         super().__init__(
             "bfast_tile",
@@ -33,7 +45,7 @@ class BfastTile(sw.Tile):
             inputs=[
                 self.folder, self.out_dir, self.tiles,
                 v.Html(tag="h2", children=[cm.bfast.process]),
-                self.poly, self.freq, self.trend, self.hfrac, self.level, self.backend,
+                self.poly, self.freq, self.trend, advance_params,
                 v.Html(tag="h2", children=[cm.bfast.periods]),
                 self.monitoring, self.history
                 

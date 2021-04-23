@@ -7,6 +7,7 @@
         }
     },
     "widget": {
+        "advance_params": "Advanced parameters",
         "folder": {
             "label": "Select Folder",
             "no_ts": "the folder {} is not a valid SEPAL time series folder. please select a valid Time series folder",
