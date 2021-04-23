@@ -154,7 +154,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                     'tile': tile
                 }
                 
-                with futures.ThreadPoolExecutor(max_workers=4) as executor:
+                with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
                     executor.map(partial(bfast_window, **bfast_params), windows)
         
         # write in the logs that the tile is finished
