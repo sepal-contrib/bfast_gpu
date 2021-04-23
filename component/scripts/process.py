@@ -7,6 +7,7 @@ import rasterio as rio
 import numpy as np
 from bfast import BFASTMonitor
 from bfast.monitor.utils import crop_data_dates
+from osgeo import gdal
 
 from component import parameter as cp
 from component.message import cm
@@ -26,7 +27,7 @@ def break_to_decimal_year(idx, dates):
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
 
 def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, count, out, tile):
-    """TODO"""
+    """Run the bfast model on image windows"""
     
     # read in a read_lock to avoid duplicate reading and corruption of the data
     with read_lock:
@@ -61,14 +62,13 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
     
     with write_lock:
-        dst.write(monitoring_results, window=window)
-        
-    out.update_progress(count, cm.bfast.progress.format(tile))
+        dst.write(monitoring_results, window=window)   
+        out.update_progress(count, cm.bfast.progress.format(tile))
     
     return
         
 def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, out):
-    """run the bfast programm using the user parameters and pilot the differnt threads that will be used"""
+    """pilot the different threads that will launch the bfast process on windows"""
     
     # prepare parameters for crop as a dict 
     crop_params = {
@@ -92,7 +92,8 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     save_dir = cp.result_dir/out_dir/parameter_string
     save_dir.mkdir(parents=True, exist_ok=True)
     
-    # loop through the tiles 
+    # loop through the tiles
+    file_list = []
     for tile in tiles:
         
         # get the starting time 
@@ -106,10 +107,14 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         tile_save_dir = save_dir/tile
         tile_save_dir.mkdir(exist_ok=True)
         
-        # check the logs to see if the tile is already finished 
+        # set the log and output file names
         log_file = tile_save_dir/f'tile_{tile}.log'
+        file = tile_save_dir/'bfast_outputs.tif'
+        
+        # check the logs to see if the tile is already finished 
         if log_file.is_file():
             out.add_msg(cm.bfast.skip.format(tile))
+            file_list.append(str(file))
             continue
         
         # create the locks to avoid data coruption
@@ -134,7 +139,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
             windows = [w for _, w in src.block_windows()]
             
             # execute the concurent threads and write the results in a dst file 
-            with rio.open(tile_save_dir/'bfast_outputs.tif', 'w', **profile) as dst:
+            with rio.open(file, 'w', **profile) as dst:
                 
                 bfast_params = {
                     'read_lock': read_lock, 
@@ -154,7 +159,19 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         
         # write in the logs that the tile is finished
         write_logs(log_file, start, datetime.now())
-                        
+        
+        # add the file to the file_list
+        file_list.append(str(file))
+        
+    # write a global vrt file to open all the tile at one
+    vrt_path = save_dir/'bfast_output.vrt'
+    ds = gdal.BuildVRT(str(vrt_path), file_list)
+    ds.FlushCache()
+        
+    # check that the file was effectively created (gdal doesn't raise errors)
+    if not vrt_path.is_file():
+        raise Exception(f"the vrt {vrt_path} was not created")
+           
     return 
 
 def write_logs(log_file, start, end):
