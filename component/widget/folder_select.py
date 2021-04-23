@@ -30,6 +30,13 @@ class FolderSelect(sw.FileInput):
     def is_valid_ts(self):
         """Check if the current folder is a SEPAL generated time series folder"""
         
+        # clean the errors 
+        self.selected_file.error_messages = None
+        
+        # avoid bug at start 
+        if not self.v_model:
+            return True
+        
         folder = Path(self.v_model)
         
         valid = True
@@ -43,5 +50,8 @@ class FolderSelect(sw.FileInput):
                 except:
                     valid = False
                     break
+                    
+        # write an error message 
+        self.selected_file.error_messages = None if valid else cm.widget.folder.no_ts.format('')  
         
         return valid
