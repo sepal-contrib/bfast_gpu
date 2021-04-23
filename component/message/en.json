@@ -19,7 +19,7 @@
         },
         "out_dir": {
             "label": "Output directory",
-            "hint": "The output directory will be created automatically based on the parameters and the basemname of your time series",
+            "hint": "The output foder will be created automatically based on the basename of your time series. You can still modify it.",
             "no_dir": "No name have been provided for the output directory"
         },
         "harmonic": {

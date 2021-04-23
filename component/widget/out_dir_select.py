@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import ipyvuetify as v 
 from sepal_ui import sepalwidgets as sw
@@ -12,13 +13,14 @@ class OutDirSelect(sw.SepalWidget, v.TextField):
         # default parameters 
         self.v_model=None
         self.label=cm.widget.out_dir.label
-        self.readonly=True
         self.hint=cm.widget.out_dir.hint
         self.class_="mb-2"
-        #self.persistent_hint=True
         
         # create the widget
         super().__init__(**kwargs)
+        
+        # add a behaviour on modifications 
+        self.on_event('blur', self._sanitize)
         
     def set_folder(self, path):
         """use the path of the time_series to name the folder that is used to store the information"""
@@ -30,6 +32,15 @@ class OutDirSelect(sw.SepalWidget, v.TextField):
         self.v_model = path.stem
         
         return self
+        
+    def _sanitize(self, widget, event, data):
+        """if the user decide to change the folder name it need to be sanitized to be used"""
+        
+        val = re.sub('[^a-zA-Z\d\-\_]', '_', self.v_model)
+        self.v_model = val
+        
+        return self
+        
         
         
         
