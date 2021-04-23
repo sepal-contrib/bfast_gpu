@@ -2,6 +2,7 @@ import threading
 from concurrent import futures
 from datetime import datetime
 from functools import partial
+import time
 
 import rasterio as rio
 import numpy as np
@@ -26,7 +27,7 @@ def break_to_decimal_year(idx, dates):
         break_date = dates[idx-1]
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
 
-def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, count, out, tile):
+def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, out):
     """Run the bfast model on image windows"""
     
     # read in a read_lock to avoid duplicate reading and corruption of the data
@@ -63,7 +64,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     with write_lock:
         dst.write(monitoring_results, window=window)   
-        out.update_progress(count, cm.bfast.progress.format(tile))
+        out.update_progress()
     
     return
         
@@ -99,9 +100,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # get the starting time 
         start = datetime.now()
         
-        # reset the output 
-        out.reset_progress()
-        
         # get the segment useful folders 
         tile_dir = folder/tile
         tile_save_dir = save_dir/tile
@@ -114,6 +112,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # check the logs to see if the tile is already finished 
         if log_file.is_file():
             out.add_msg(cm.bfast.skip.format(tile))
+            time.sleep(.5) # to let people read the message
             file_list.append(str(file))
             continue
         
@@ -134,6 +133,9 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
             # display an tile computation message
             count = sum(1 for _ in src.block_windows())
             out.add_live_msg(cm.bfast.sum_up.format(count, tile))
+            
+            # reset the output 
+            out.reset_progress(count, cm.bfast.progress.format(tile))
         
             # get the windows
             windows = [w for _, w in src.block_windows()]
@@ -149,9 +151,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                     'segment_dir': tile_dir, 
                     'monitor_params': monitor_params, 
                     'crop_params': crop_params,
-                    'count': count,
-                    'out': out,
-                    'tile': tile
+                    'out': out
                 }
                 
                 with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
