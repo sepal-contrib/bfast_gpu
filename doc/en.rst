@@ -141,11 +141,6 @@ Example
 
 Here you'll find an example of this 2 bands over the Juaboso Region in Ghana whit a monitoring period between 2017 and 2019:
 
-+-------------+----------+
-| |magnitude| | |breaks| +
-+-------------+----------+
-    
-    
 .. |magnitude| figure:: https://raw.githubusercontent.com/12rambau/bfast_gpu/master/utils/magnitude.png
 
     Magnitude display with the magma colormap, values in [-624, 417]
@@ -153,6 +148,10 @@ Here you'll find an example of this 2 bands over the Juaboso Region in Ghana whi
 .. |breaks| figure:: https://raw.githubusercontent.com/12rambau/bfast_gpu/master/utils/breaks.png
 
     Breaks masked in the center of the region. displayed with a viridis colormap, values in [2017.26, 2019.98]
+    
++-------------+----------+
+| |magnitude| | |breaks| +
++-------------+----------+
     
 
     
