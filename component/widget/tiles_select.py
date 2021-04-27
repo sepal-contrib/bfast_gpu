@@ -30,7 +30,7 @@ class TilesSelect(sw.SepalWidget, v.Select):
         """create selectable items that corresponds to the folders inside the provided folder"""
         
         # update items
-        self.items = [d.stem for d in folder.glob('*/')]
+        self.items = sorted([d.stem for d in folder.glob('*/')])
         
         # by default selec all available tiles
         self.v_model = self.items
