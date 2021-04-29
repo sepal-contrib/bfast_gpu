@@ -48,8 +48,7 @@ class BfastTile(sw.Tile):
                 v.Html(tag="h2", children=[cm.bfast.process]),
                 self.poly, self.freq, self.trend, advance_params,
                 v.Html(tag="h2", children=[cm.bfast.periods]),
-                self.monitoring, self.history
-                
+                self.history,self.monitoring
             ],
             output=cw.CustomAlert(),
             btn=sw.Btn(cm.bfast.btn)
