@@ -7,6 +7,7 @@ from sepal_ui import sepalwidgets as sw
 from component import widget as cw
 from component.message import cm
 from component import scripts as cs
+from component import parameter as cp
 
 class BfastTile(sw.Tile):
     
@@ -169,7 +170,7 @@ class BfastTile(sw.Tile):
         history = self.history.slider.v_model
         monitor = self.monitoring.range.v_model[0]
         
-        if history > (monitor-40):
+        if history > (monitor - cp.min_images):
             self.output.add_msg(cm.widget.history.too_short, 'warning')
         else:
             self.output.reset()

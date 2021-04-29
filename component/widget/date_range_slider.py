@@ -1,6 +1,8 @@
 from sepal_ui import sepalwidgets as sw 
 import ipyvuetify as v
 
+from component import parameter as cp
+
 class DateRangeSlider(sw.SepalWidget, v.Layout):
     
     def __init__(self, dates=None, **kwargs):
@@ -78,7 +80,7 @@ class DateRangeSlider(sw.SepalWidget, v.Layout):
         
         # set the slider 
         self.range.max = len(dates)-1
-        self.range.v_model = [0, len(dates)-1]
+        self.range.v_model = [cp.min_images, len(dates)-1]
         
         # activate the slider 
         self.range.disabled = False
