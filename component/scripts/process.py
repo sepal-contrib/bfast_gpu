@@ -163,8 +163,8 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # add the file to the file_list
         file_list.append(str(file))
         
-    # write a global vrt file to open all the tile at one
-    vrt_path = save_dir/'bfast_outputs.vrt'
+    # write a global vrt file to open all the tile at once
+    vrt_path = save_dir/f'bfast_outputs_{out_dir}.vrt'
     ds = gdal.BuildVRT(str(vrt_path), file_list)
     ds.FlushCache()
         
