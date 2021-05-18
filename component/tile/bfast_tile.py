@@ -58,8 +58,8 @@ class BfastTile(sw.Tile):
         # add js behaviour 
         self.folder.observe(self._on_folder_change, 'v_model')
         self.btn.on_event('click', self._start_process)
-        #self.monitoring.observe(self._check_periods, 'v_model')
-        #self.history.observe(self._check_periods, 'v_model')
+        self.monitoring.observe(self._check_periods, 'v_model')
+        self.history.observe(self._check_periods, 'v_model')
         
     def _start_process(self, widget, event, data):
         """start the bfast process"""
@@ -134,6 +134,7 @@ class BfastTile(sw.Tile):
             self.monitoring.disable()
             self.history.disable()
             self.tiles.reset()
+            self.dates_0 = None
             
             # display a message to the end user
             self.output.add_msg(cm.widget.folder.no_ts.format(folder), 'warning')
@@ -158,23 +159,30 @@ class BfastTile(sw.Tile):
         
         return self
     
-    #def _check_periods(self, change):
-    #    """check if the historical period have enough images"""
-    #    
-    #    # to avoid bug on disable
-    #    if not self.history.dates:
-    #        return self
-    #    
-    #    # get the index of the current history and monitoring dates
-    #    history = self.history.slider.v_model
-    #    monitor = self.monitoring.range.v_model[0]
-    #    
-    #    if history > (monitor - cp.min_images):
-    #        self.output.add_msg(cm.widget.history.too_short, 'warning')
-    #    else:
-    #        self.output.reset()
-    #        
-    #    return self
+    def _check_periods(self, change):
+        """check if the historical period have enough images"""
+        
+        # to avoid bug on disable
+        if not self.history.dates:
+            return self
+        
+        # get the dates from the folder 
+        folder = Path(self.folder.v_model)
+        with (folder/'0'/'dates.csv').open() as f:
+            dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
+        
+        # get the value of the current history and monitoring dates
+        history = next(d[0] for d in enumerate(dates) if d[1] > self.history.v_model)
+        monitor = next(d[0] for d in enumerate(dates) if d[1] > self.monitoring.v_model[0])
+        
+        
+        
+        if history > (monitor - cp.min_images):
+            self.output.add_msg(cm.widget.history.too_short, 'warning')
+        else:
+            self.output.reset()
+            
+        return self
         
         
         
