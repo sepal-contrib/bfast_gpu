@@ -92,25 +92,21 @@ class BfastTile(sw.Tile):
         if not self.output.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
         if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
         
-        # check the dates
-        start_history = datetime.strptime(history, "%Y-%m-%d")
-        start_monitor = datetime.strptime(monitoring[0], "%Y-%m-%d")
-        end_monitor = datetime.strptime(monitoring[1], "%Y-%m-%d")
-        
-        if not (start_history < start_monitor < end_monitor):
+        # check the dates        
+        if not (history < monitoring[0] < monitoring[1]):
             self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
         
-        try:
+        #try:
             
-            # run the bfast process
-            cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
+        # run the bfast process
+        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
         
-            # display the end of computation message
-            self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+        # display the end of computation message
+        self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
             
-        except Exception as e:
-            self.output.add_live_msg(str(e))
+        #except Exception as e:
+        #    self.output.add_live_msg(str(e), 'error')
         
         widget.toggle_loading()
         
