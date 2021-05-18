@@ -69,14 +69,19 @@ class DateRangeSlider(sw.SepalWidget, v.Layout):
         return self
     
     def set_dates(self, dates):
-        """set the dates and activate the widget"""
+        """set the dates and activate the widget"""   
         
         # save the dates 
         self.dates = pd.date_range(dates[0], dates[-1], freq='MS').to_pydatetime().tolist()
         
+        # get the first usable date index
+        min_ = min(cp.min_images, len(dates)/2)
+        min_date = dates[min_]
+        index = next(d[0] for d in enumerate(self.dates) if d[1] > min_date)
+        
         # set the slider 
         self.slider.max = len(self.dates)-1
-        self.slider.v_model = [0, len(self.dates)-1]
+        self.slider.v_model = [index, len(self.dates)-1]
         
         # set the ticks of the slider 
         self.slider.tick_labels = [str(d.year) if d.month == 1 and d.year % 5 == 0 else '' for d in self.dates]
