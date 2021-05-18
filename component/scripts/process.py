@@ -37,7 +37,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     # read the local observation date
     with (segment_dir/'dates.csv').open() as f:
-        dates = [dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()]
+        dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
         
     # update the crop and bfast params with the current tile dates 
     crop_params = {k: next(d for d in dates if d > val) for k, val in crop_params.items()}
