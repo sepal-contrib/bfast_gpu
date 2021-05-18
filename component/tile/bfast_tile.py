@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime as dt
 
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw 
@@ -58,8 +58,8 @@ class BfastTile(sw.Tile):
         # add js behaviour 
         self.folder.observe(self._on_folder_change, 'v_model')
         self.btn.on_event('click', self._start_process)
-        self.monitoring.observe(self._check_periods, 'v_model')
-        self.history.observe(self._check_periods, 'v_model')
+        #self.monitoring.observe(self._check_periods, 'v_model')
+        #self.history.observe(self._check_periods, 'v_model')
         
     def _start_process(self, widget, event, data):
         """start the bfast process"""
@@ -149,7 +149,7 @@ class BfastTile(sw.Tile):
         # set the dates for the sliders 
         # we consider that the dates are consistent through all the folders so we can use only the first one
         with (folder/'0'/'dates.csv').open() as f:
-            dates = [l for l in f.read().splitlines() if l.rstrip()]
+            dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
             
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
@@ -158,23 +158,23 @@ class BfastTile(sw.Tile):
         
         return self
     
-    def _check_periods(self, change):
-        """check if the historical period have enough images"""
-        
-        # to avoid bug on disable
-        if not self.history.dates:
-            return self
-        
-        # get the index of the current history and monitoring dates
-        history = self.history.slider.v_model
-        monitor = self.monitoring.range.v_model[0]
-        
-        if history > (monitor - cp.min_images):
-            self.output.add_msg(cm.widget.history.too_short, 'warning')
-        else:
-            self.output.reset()
-            
-        return self
+    #def _check_periods(self, change):
+    #    """check if the historical period have enough images"""
+    #    
+    #    # to avoid bug on disable
+    #    if not self.history.dates:
+    #        return self
+    #    
+    #    # get the index of the current history and monitoring dates
+    #    history = self.history.slider.v_model
+    #    monitor = self.monitoring.range.v_model[0]
+    #    
+    #    if history > (monitor - cp.min_images):
+    #        self.output.add_msg(cm.widget.history.too_short, 'warning')
+    #    else:
+    #        self.output.reset()
+    #        
+    #    return self
         
         
         
