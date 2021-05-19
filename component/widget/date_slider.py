@@ -49,7 +49,7 @@ class DateSlider(sw.SepalWidget, v.Layout):
         self.v_model = date
         
         # update what is display to the user 
-        self.display.children = [date.strftime("%b-%y")]
+        self.display.children = [date.strftime("%b-%Y")]
         
         return self
          

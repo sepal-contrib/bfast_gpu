@@ -50,7 +50,7 @@ class DateRangeSlider(sw.SepalWidget, v.Layout):
         self.v_model = dates
         
         # update what is display to the user 
-        txt = [d.strftime("%b-%y") for d in dates]
+        txt = [d.strftime("%b-%Y") for d in dates]
         self.display.children = [' - '.join(txt)]
         
         return self
