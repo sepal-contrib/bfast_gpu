@@ -1,6 +1,6 @@
 import threading
 from concurrent import futures
-from datetime import datetime
+from datetime import datetime as dt
 from functools import partial
 import time
 
@@ -37,13 +37,17 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     
     # read the local observation date
     with (segment_dir/'dates.csv').open() as f:
-        dates = [datetime.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()]
+        dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
+        
+    # update the crop and bfast params with the current tile dates 
+    crop_params = {k: next(d for d in dates if d > val) for k, val in crop_params.items()}
+    loc_monitor_params = {**monitor_params, 'start_monitor': next(d for d in dates if d > monitor_params['start_monitor'])}
         
     # crop the initial data to the used dates
     data, dates = crop_data_dates(data,  dates, **crop_params)
     
     # start the bfast process
-    model = BFASTMonitor(**monitor_params)
+    model = BFASTMonitor(**loc_monitor_params)
     
     # fit the model 
     model.fit(data, dates)
@@ -52,7 +56,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
     
     # slice the date to narrow it to the monitoring dates
-    start = monitor_params['start_monitor']
+    start = loc_monitor_params['start_monitor']
     end = crop_params['end']
     monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[    
     
@@ -73,13 +77,13 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     
     # prepare parameters for crop as a dict 
     crop_params = {
-        'start': datetime.strptime(history, '%Y-%m-%d'),
-        'end': datetime.strptime(monitoring[1], '%Y-%m-%d')
+        'start': history,
+        'end': monitoring[1]
     }
         
     # prepare parameters for the bfastmonitor function 
     monitor_params = {
-        'start_monitor': datetime.strptime(monitoring[0], '%Y-%m-%d'),
+        'start_monitor': monitoring[0],
         'freq': freq,
         'k': k,
         'hfrac': hfrac,
@@ -89,7 +93,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     }
     
     # create 1 folder for each set of parameter
-    parameter_string = f'{history[:4]}_{monitoring[0][:4]}_{monitoring[1][:4]}_k{k}_f{freq}_t{int(trend)}_h{hfrac}_l{level}'
+    parameter_string = f'{history.year}_{monitoring[0].year}_{monitoring[1].year}_k{k}_f{freq}_t{int(trend)}_h{hfrac}_l{level}'
     save_dir = cp.result_dir/out_dir/parameter_string
     save_dir.mkdir(parents=True, exist_ok=True)
     
@@ -98,7 +102,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     for tile in tiles:
         
         # get the starting time 
-        start = datetime.now()
+        start = dt.now()
         
         # get the segment useful folders 
         tile_dir = folder/tile
@@ -158,7 +162,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                     executor.map(partial(bfast_window, **bfast_params), windows)
         
         # write in the logs that the tile is finished
-        write_logs(log_file, start, datetime.now())
+        write_logs(log_file, start, dt.now())
         
         # add the file to the file_list
         file_list.append(str(file))

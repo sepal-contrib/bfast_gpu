@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime as dt
 
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw 
@@ -92,25 +92,21 @@ class BfastTile(sw.Tile):
         if not self.output.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
         if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
         
-        # check the dates
-        start_history = datetime.strptime(history, "%Y-%m-%d")
-        start_monitor = datetime.strptime(monitoring[0], "%Y-%m-%d")
-        end_monitor = datetime.strptime(monitoring[1], "%Y-%m-%d")
-        
-        if not (start_history < start_monitor < end_monitor):
+        # check the dates        
+        if not (history < monitoring[0] < monitoring[1]):
             self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
         
-        try:
+        #try:
             
-            # run the bfast process
-            cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
+        # run the bfast process
+        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
         
-            # display the end of computation message
-            self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+        # display the end of computation message
+        self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
             
-        except Exception as e:
-            self.output.add_live_msg(str(e))
+        #except Exception as e:
+        #    self.output.add_live_msg(str(e), 'error')
         
         widget.toggle_loading()
         
@@ -134,6 +130,7 @@ class BfastTile(sw.Tile):
             self.monitoring.disable()
             self.history.disable()
             self.tiles.reset()
+            self.dates_0 = None
             
             # display a message to the end user
             self.output.add_msg(cm.widget.folder.no_ts.format(folder), 'warning')
@@ -149,7 +146,7 @@ class BfastTile(sw.Tile):
         # set the dates for the sliders 
         # we consider that the dates are consistent through all the folders so we can use only the first one
         with (folder/'0'/'dates.csv').open() as f:
-            dates = [l for l in f.read().splitlines() if l.rstrip()]
+            dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
             
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
@@ -165,9 +162,16 @@ class BfastTile(sw.Tile):
         if not self.history.dates:
             return self
         
-        # get the index of the current history and monitoring dates
-        history = self.history.slider.v_model
-        monitor = self.monitoring.range.v_model[0]
+        # get the dates from the folder 
+        folder = Path(self.folder.v_model)
+        with (folder/'0'/'dates.csv').open() as f:
+            dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
+        
+        # get the value of the current history and monitoring dates
+        history = next(d[0] for d in enumerate(dates) if d[1] > self.history.v_model)
+        monitor = next(d[0] for d in enumerate(dates) if d[1] > self.monitoring.v_model[0])
+        
+        
         
         if history > (monitor - cp.min_images):
             self.output.add_msg(cm.widget.history.too_short, 'warning')

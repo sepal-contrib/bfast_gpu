@@ -1,23 +1,17 @@
 from sepal_ui import sepalwidgets as sw 
 import ipyvuetify as v
+import pandas as pd
+from datetime import datetime as dt
 
 class DateSlider(sw.SepalWidget, v.Layout):
     
     def __init__(self, dates=None, **kwargs):
         
-        # save the dates values 
-        self.dates = dates
-        
         # display the dates in a text filed in a the prepend slot 
         self.display = v.Html(tag="span", children = [''])
         
         # create a range widget with the default params 
-        self.slider = v.Slider(
-            disabled=True,
-            v_model = 1,
-            max= 1,
-            class_="pl-5 pr-1 mt-1"
-        )
+        self.slider = v.Slider(class_="pl-5 pr-1 mt-1")
         
         # add the non conventional parameters for customization
         for k, val in kwargs.items():
@@ -30,8 +24,8 @@ class DateSlider(sw.SepalWidget, v.Layout):
             v_model = None,
             xs12=True,
             children=[
-                v.Flex(xs9=True, children=[self.slider]), 
-                v.Flex(xs3=True, children=[self.display])
+                v.Flex(xs10=True, children=[self.slider]), 
+                v.Flex(xs2=True, children=[self.display])
             ]
         )
         
@@ -41,6 +35,8 @@ class DateSlider(sw.SepalWidget, v.Layout):
         # add the real dates if existing 
         if dates:
             self.set_dates(dates)
+        else:
+            self.disable()
         
     def _on_change(self, change):
         
@@ -53,7 +49,7 @@ class DateSlider(sw.SepalWidget, v.Layout):
         self.v_model = date
         
         # update what is display to the user 
-        self.display.children = [date]
+        self.display.children = [date.strftime("%b-%Y")]
         
         return self
          
@@ -66,6 +62,7 @@ class DateSlider(sw.SepalWidget, v.Layout):
         self.slider.max = 1
         self.slider.disabled = True
         self.display.children = ['']
+        self.slider.ticks = False
         
         return self
     
@@ -73,16 +70,14 @@ class DateSlider(sw.SepalWidget, v.Layout):
         """set the dates of the widget"""
         
         # save the dates 
-        self.dates = dates
+        self.dates = pd.date_range(dates[0], dates[-1], freq='MS').to_pydatetime().tolist()
         
         # set the slider 
-        self.slider.max = len(dates)-1
+        self.slider.max = len(self.dates)-1
         self.slider.v_model = 0
         
         # activate the slider 
+        self.slider.tick_labels = [str(d.year) if d.month == 1 and d.year % 5 == 0 else '' for d in self.dates]
         self.slider.disabled = False
         
         return self
-        
-        
-        
