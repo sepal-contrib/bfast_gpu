@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from sepal_ui import sepalwidgets as sw 
 import ipyvuetify as v
 import pandas as pd
@@ -69,13 +71,18 @@ class DateRangeSlider(sw.SepalWidget, v.Layout):
         return self
     
     def set_dates(self, dates):
-        """set the dates and activate the widget"""   
+        """set the dates and activate the widget"""  
+        
+        # set datemin and datemax to their min and max 
+        datemin = dates[0].replace(day=1)
+        datemax = (dates[-1].replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         
         # save the dates 
-        self.dates = pd.date_range(dates[0], dates[-1], freq='MS').to_pydatetime().tolist()
+        self.dates = pd.date_range(datemin, datemax, freq='MS').to_pydatetime().tolist()
         
         # get the first usable date index
         min_ = min(cp.min_images, len(dates)/2)
+        
         min_date = dates[min_]
         index = next(d[0] for d in enumerate(self.dates) if d[1] > min_date)
         
