@@ -1,7 +1,8 @@
+from datetime import timedelta
+
 from sepal_ui import sepalwidgets as sw 
 import ipyvuetify as v
 import pandas as pd
-from datetime import datetime as dt
 
 class DateSlider(sw.SepalWidget, v.Layout):
     
@@ -69,8 +70,12 @@ class DateSlider(sw.SepalWidget, v.Layout):
     def set_dates(self, dates):
         """set the dates of the widget"""
         
+        # set datemin and datemax to their min and max 
+        datemin = dates[0].replace(day=1)
+        datemax = (dates[-1].replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
         # save the dates 
-        self.dates = pd.date_range(dates[0], dates[-1], freq='MS').to_pydatetime().tolist()
+        self.dates = pd.date_range(datemin, datemax, freq='MS').to_pydatetime().tolist()
         
         # set the slider 
         self.slider.max = len(self.dates)-1

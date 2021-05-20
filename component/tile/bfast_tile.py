@@ -148,6 +148,8 @@ class BfastTile(sw.Tile):
         with (folder/'0'/'dates.csv').open() as f:
             dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
             
+        print('toto')
+        
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
         
