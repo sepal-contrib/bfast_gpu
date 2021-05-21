@@ -147,8 +147,6 @@ class BfastTile(sw.Tile):
         # we consider that the dates are consistent through all the folders so we can use only the first one
         with (folder/'0'/'dates.csv').open() as f:
             dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
-            
-        print('toto')
         
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
