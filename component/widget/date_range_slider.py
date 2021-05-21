@@ -81,7 +81,7 @@ class DateRangeSlider(sw.SepalWidget, v.Layout):
         self.dates = pd.date_range(datemin, datemax, freq='MS').to_pydatetime().tolist()
         
         # get the first usable date index
-        min_ = min(cp.min_images, len(dates)/2)
+        min_ = min(cp.min_images, int(len(dates)/2))
         
         min_date = dates[min_]
         index = next(d[0] for d in enumerate(self.dates) if d[1] > min_date)
