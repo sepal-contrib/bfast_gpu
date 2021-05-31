@@ -3,6 +3,7 @@ from datetime import datetime as dt
 
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw 
+from sepal_ui.scripts import utils as su
 
 from component import widget as cw
 from component.message import cm
@@ -50,7 +51,7 @@ class BfastTile(sw.Tile):
                 v.Html(tag="h2", children=[cm.bfast.periods]),
                 self.history,self.monitoring
             ],
-            output=cw.CustomAlert(),
+            alert=cw.CustomAlert(),
             btn=sw.Btn(cm.bfast.btn)
         
         )
@@ -60,7 +61,8 @@ class BfastTile(sw.Tile):
         self.btn.on_event('click', self._start_process)
         self.monitoring.observe(self._check_periods, 'v_model')
         self.history.observe(self._check_periods, 'v_model')
-        
+       
+    @su.loading_button(debug=False)
     def _start_process(self, widget, event, data):
         """start the bfast process"""
         
@@ -96,17 +98,12 @@ class BfastTile(sw.Tile):
         if not (history < monitoring[0] < monitoring[1]):
             self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
-        
-        #try:
             
         # run the bfast process
         cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
         
         # display the end of computation message
         self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
-            
-        #except Exception as e:
-        #    self.output.add_live_msg(str(e), 'error')
         
         widget.toggle_loading()
         
@@ -170,8 +167,6 @@ class BfastTile(sw.Tile):
         # get the value of the current history and monitoring dates
         history = next(d[0] for d in enumerate(dates) if d[1] > self.history.v_model)
         monitor = next(d[0] for d in enumerate(dates) if d[1] > self.monitoring.v_model[0])
-        
-        
         
         if history > (monitor - cp.min_images):
             self.output.add_msg(cm.widget.history.too_short, 'warning')
