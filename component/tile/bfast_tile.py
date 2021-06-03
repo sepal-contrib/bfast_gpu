@@ -82,28 +82,28 @@ class BfastTile(sw.Tile):
         history = self.history.v_model
         
         # check the inputs 
-        if not self.output.check_input(folder, cm.widget.folder.no_folder): return widget.toggle_loading()
-        if not self.output.check_input(out_dir, cm.widget.out_dir.no_dir): return widget.toggle_loading()
-        if not self.output.check_input(tiles, cm.widget.tiles.no_tiles): return widget.toggle_loading()
-        if not self.output.check_input(poly, cm.widget.harmonic.no_poly): return widget.toggle_loading()
-        if not self.output.check_input(freq, cm.widget.freq.no_freq): return widget.toggle_loading()
-        if not self.output.check_input(trend, cm.widget.trend.no_trend): return widget.toggle_loading()
-        if not self.output.check_input(hfrac, cm.widget.hfrac.no_frac): return widget.toggle_loading()
-        if not self.output.check_input(level, cm.widget.level.no_level): return widget.toggle_loading()
-        if not self.output.check_input(backend, cm.widget.backend.no_backend): return widget.toggle_loading()
-        if not self.output.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
-        if not self.output.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
+        if not self.alert.check_input(folder, cm.widget.folder.no_folder): return widget.toggle_loading()
+        if not self.alert.check_input(out_dir, cm.widget.out_dir.no_dir): return widget.toggle_loading()
+        if not self.alert.check_input(tiles, cm.widget.tiles.no_tiles): return widget.toggle_loading()
+        if not self.alert.check_input(poly, cm.widget.harmonic.no_poly): return widget.toggle_loading()
+        if not self.alert.check_input(freq, cm.widget.freq.no_freq): return widget.toggle_loading()
+        if not self.alert.check_input(trend, cm.widget.trend.no_trend): return widget.toggle_loading()
+        if not self.alert.check_input(hfrac, cm.widget.hfrac.no_frac): return widget.toggle_loading()
+        if not self.alert.check_input(level, cm.widget.level.no_level): return widget.toggle_loading()
+        if not self.alert.check_input(backend, cm.widget.backend.no_backend): return widget.toggle_loading()
+        if not self.alert.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
+        if not self.alert.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
         
         # check the dates        
         if not (history < monitoring[0] < monitoring[1]):
-            self.output.add_msg(cm.widget.monitoring.bad_order, 'error')
+            self.alert.add_msg(cm.widget.monitoring.bad_order, 'error')
             return widget.toggle_loading()
             
         # run the bfast process
-        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.output)
+        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.alert)
         
         # display the end of computation message
-        self.output.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+        self.alert.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
         
         widget.toggle_loading()
         
@@ -130,7 +130,7 @@ class BfastTile(sw.Tile):
             self.dates_0 = None
             
             # display a message to the end user
-            self.output.add_msg(cm.widget.folder.no_ts.format(folder), 'warning')
+            self.alert.add_msg(cm.widget.folder.no_ts.format(folder), 'warning')
             
             return self
         
@@ -148,7 +148,7 @@ class BfastTile(sw.Tile):
         self.monitoring.set_dates(dates)
         self.history.set_dates(dates)
         
-        self.output.add_msg(cm.widget.folder.valid_ts.format(folder))
+        self.alert.add_msg(cm.widget.folder.valid_ts.format(folder))
         
         return self
     
@@ -169,9 +169,9 @@ class BfastTile(sw.Tile):
         monitor = next(d[0] for d in enumerate(dates) if d[1] > self.monitoring.v_model[0])
         
         if history > (monitor - cp.min_images):
-            self.output.add_msg(cm.widget.history.too_short, 'warning')
+            self.alert.add_msg(cm.widget.history.too_short, 'warning')
         else:
-            self.output.reset()
+            self.alert.reset()
             
         return self
         
