@@ -62,11 +62,9 @@ class BfastTile(sw.Tile):
         self.monitoring.observe(self._check_periods, 'v_model')
         self.history.observe(self._check_periods, 'v_model')
        
-    @su.loading_button(debug=False)
+    @su.loading_button(debug=True)
     def _start_process(self, widget, event, data):
         """start the bfast process"""
-        
-        widget.toggle_loading()
         
         # gather all the variables for conveniency
         folder = self.folder.v_model
@@ -82,30 +80,26 @@ class BfastTile(sw.Tile):
         history = self.history.v_model
         
         # check the inputs 
-        if not self.alert.check_input(folder, cm.widget.folder.no_folder): return widget.toggle_loading()
-        if not self.alert.check_input(out_dir, cm.widget.out_dir.no_dir): return widget.toggle_loading()
-        if not self.alert.check_input(tiles, cm.widget.tiles.no_tiles): return widget.toggle_loading()
-        if not self.alert.check_input(poly, cm.widget.harmonic.no_poly): return widget.toggle_loading()
-        if not self.alert.check_input(freq, cm.widget.freq.no_freq): return widget.toggle_loading()
-        if not self.alert.check_input(trend, cm.widget.trend.no_trend): return widget.toggle_loading()
-        if not self.alert.check_input(hfrac, cm.widget.hfrac.no_frac): return widget.toggle_loading()
-        if not self.alert.check_input(level, cm.widget.level.no_level): return widget.toggle_loading()
-        if not self.alert.check_input(backend, cm.widget.backend.no_backend): return widget.toggle_loading()
-        if not self.alert.check_input(len(monitoring), cm.widget.monitoring.no_dates): return widget.toggle_loading()
-        if not self.alert.check_input(history, cm.widget.history.no_date): return widget.toggle_loading()  
+        if not self.alert.check_input(folder, cm.widget.folder.no_folder): return 
+        if not self.alert.check_input(out_dir, cm.widget.out_dir.no_dir): return 
+        if not self.alert.check_input(tiles, cm.widget.tiles.no_tiles): return 
+        if not self.alert.check_input(poly, cm.widget.harmonic.no_poly): return 
+        if not self.alert.check_input(freq, cm.widget.freq.no_freq): return 
+        if not self.alert.check_input(trend, cm.widget.trend.no_trend): return 
+        if not self.alert.check_input(hfrac, cm.widget.hfrac.no_frac): return 
+        if not self.alert.check_input(level, cm.widget.level.no_level): return 
+        if not self.alert.check_input(backend, cm.widget.backend.no_backend): return 
+        if not self.alert.check_input(len(monitoring), cm.widget.monitoring.no_dates): return 
+        if not self.alert.check_input(history, cm.widget.history.no_date): return
         
         # check the dates        
-        if not (history < monitoring[0] < monitoring[1]):
-            self.alert.add_msg(cm.widget.monitoring.bad_order, 'error')
-            return widget.toggle_loading()
+        if not (history < monitoring[0] < monitoring[1]): return self.alert.add_msg(cm.widget.monitoring.bad_order, 'error') 
             
         # run the bfast process
         cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.alert)
         
         # display the end of computation message
         self.alert.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
-        
-        widget.toggle_loading()
         
     def _on_folder_change(self, change):
         """
@@ -156,7 +150,7 @@ class BfastTile(sw.Tile):
         """check if the historical period have enough images"""
         
         # to avoid bug on disable
-        if not self.history.dates:
+        if not (self.history.dates and self.monitoring.dates):
             return self
         
         # get the dates from the folder 
