@@ -119,9 +119,9 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
     
     with write_lock:
-        dst.write(monitoring_results, window=window)   
+        dst.write(monitoring_results, window=window)
         out.update_progress()
-    
+        
     return
         
 def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, out):
@@ -215,8 +215,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                 #for window in windows:
                 #    bfast_window(window, **bfast_params)
                 #    raise Exception ("done")
-                
-                out.add_live_msg('start bfast tile computation (the initialisation can take time)')
                 
                 with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
                     executor.map(partial(bfast_window, **bfast_params), windows)
