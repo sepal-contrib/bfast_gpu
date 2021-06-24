@@ -3,6 +3,8 @@ from concurrent import futures
 from datetime import datetime as dt
 from functools import partial
 import time
+import json
+from pathlib import Path
 
 import rasterio as rio
 import numpy as np
@@ -12,6 +14,38 @@ from osgeo import gdal
 
 from component import parameter as cp
 from component.message import cm
+
+def debug(data, dates, segment_dir, loc_monitor_params, write_lock):
+    
+    with write_lock:
+        # set the debugging folder 
+        debug_dir = cp.result_dir/'bfast_gpu_debug'
+        debug_dir.mkdir(exist_ok=True)
+
+        # extract the time serie name and create a folder 
+        ts_dir = debug_dir/segment_dir.parts[-2]
+        ts_dir.mkdir(exist_ok=True)
+
+        # extract the tile number 
+        tile_dir = ts_dir/segment_dir.parts[-1]
+        tile_dir.mkdir(exist_ok=True)
+    
+    # get the number of folder in the tile and create a new one 
+    number = len([f for f in tile_dir.iterdir() if f.is_dir()])
+    save_folder = tile_dir/f'{number}'
+    save_folder.mkdir()
+    
+    # save monitoring parameters
+    moitor_params = {k: v if type(v) != dt else v.strftime("%Y-%m-%d") for k, v in loc_monitor_params.items()}
+    (save_folder/'monitor_params.json').write_text(json.dumps(moitor_params, indent=4))
+    
+    # save dates 
+    (save_folder/'dates.json').write_text(json.dumps([d.strftime("%Y-%m-%d") for d in dates], indent=4))
+    
+    # save data 
+    np.save((save_folder/'data.npy'), data)
+    
+    return
 
 def break_to_decimal_year(idx, dates):
     """
@@ -46,11 +80,29 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # crop the initial data to the used dates
     data, dates = crop_data_dates(data,  dates, **crop_params)
     
+    #with write_lock: 
+    #    out.add_live_msg("creating the model")
+    
     # start the bfast process
     model = BFASTMonitor(**loc_monitor_params)
     
+    #with write_lock: 
+    #    out.add_live_msg("fitting the model")
+        
     # fit the model 
     model.fit(data, dates)
+    
+    #with write_lock: 
+    #    out.add_live_msg("check for NaN")
+    
+    # test if magnitude exist
+    # if yes log the incriminated window parameter to further investigation
+    #if np.isnan(model.magnitudes).all():
+    #    
+    #    with write_lock: 
+    #        out.add_live_msg("write debug info")
+    #       
+    #    debug(data, dates, segment_dir, loc_monitor_params, write_lock)
 
     # vectorized fonction to format the results as decimal year (e.g mid 2015 will be 2015.5)
     to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
@@ -58,7 +110,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # slice the date to narrow it to the monitoring dates
     start = loc_monitor_params['start_monitor']
     end = crop_params['end']
-    monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[    
+    monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[ 
     
     # compute the decimal break on the model 
     decimal_breaks = to_decimal(model.breaks, monitoring_dates)
@@ -143,6 +195,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         
             # get the windows
             windows = [w for _, w in src.block_windows()]
+            print(len(windows))
             
             # execute the concurent threads and write the results in a dst file 
             with rio.open(file, 'w', **profile) as dst:
@@ -157,6 +210,13 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
                     'crop_params': crop_params,
                     'out': out
                 }
+                
+                # test outside the future
+                #for window in windows:
+                #    bfast_window(window, **bfast_params)
+                #    raise Exception ("done")
+                
+                out.add_live_msg('start bfast tile computation (the initialisation can take time)')
                 
                 with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
                     executor.map(partial(bfast_window, **bfast_params), windows)
@@ -189,6 +249,8 @@ def write_logs(log_file, start, end):
         f.write(f"Elapsed time: {end-start}")
         
     return
+    
+    
         
         
         
