@@ -121,69 +121,6 @@ def bfast_stack(stack, segment_dir, save_dir, monitor_params, crop_params, out):
             out.update_progress()
         
     return
-
-def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, out):
-    """Run the bfast model on image windows"""
-    
-    # read in a read_lock to avoid duplicate reading and corruption of the data
-    with read_lock:
-        data = src.read(window=window).astype(np.int16)
-        # all the nan are transformed into 0 by casting don't we want to use np.iinfo.minint16 ? 
-    
-    # read the local observation date
-    with (segment_dir/'dates.csv').open() as f:
-        dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
-        
-    # update the crop and bfast params with the current tile dates 
-    crop_params = {k: next(d for d in dates if d > val) for k, val in crop_params.items()}
-    loc_monitor_params = {**monitor_params, 'start_monitor': next(d for d in dates if d > monitor_params['start_monitor'])}
-        
-    # crop the initial data to the used dates
-    data, dates = crop_data_dates(data,  dates, **crop_params)
-    
-    #with write_lock: 
-    #    out.add_live_msg("creating the model")
-    
-    # start the bfast process
-    model = BFASTMonitor(**loc_monitor_params)
-    
-    #with write_lock: 
-    #    out.add_live_msg("fitting the model")
-        
-    # fit the model 
-    model.fit(data, dates)
-    
-    #with write_lock: 
-    #    out.add_live_msg("check for NaN")
-    
-    # test if magnitude exist
-    # if yes log the incriminated window parameter to further investigation
-    #if np.isnan(model.magnitudes).all():
-    #    
-    #    with write_lock: 
-    #        out.add_live_msg("write debug info")
-    #       
-    #    debug(data, dates, segment_dir, loc_monitor_params, write_lock)
-
-    # vectorized fonction to format the results as decimal year (e.g mid 2015 will be 2015.5)
-    to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
-    
-    # slice the date to narrow it to the monitoring dates
-    start = loc_monitor_params['start_monitor']
-    end = crop_params['end']
-    monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[ 
-    
-    # compute the decimal break on the model 
-    decimal_breaks = to_decimal(model.breaks, monitoring_dates)
-    
-    # agregate the results on 2 bands
-    monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
-    
-    with write_lock:
-        dst.write(monitoring_results, window=window)
-        out.update_progress()
-        
-    return
         
 def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend, level, backend, out):
     """pilot the different threads that will launch the bfast process on windows"""
@@ -211,7 +148,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     save_dir.mkdir(parents=True, exist_ok=True)
     
     # loop through the tiles
-    file_list = []
     for tile in tiles:
         
         # get the starting time 
@@ -233,12 +169,8 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
             file_list.append(str(file))
             continue
         
-        # create the locks to avoid data coruption
-        read_lock = threading.Lock()
-        write_lock = threading.Lock()
-        
         # count the number of windows for advancement display
-        sub_stack_files = list(folder.glob('*/tile-*/stack.vrt'))
+        sub_stack_files = list(folder.glob(f'{tile}/tile-*/stack.vrt'))
         
         count = 0
         for i, stack in enumerate(sub_stack_files):
@@ -269,17 +201,17 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # write in the logs that the tile is finished
         write_logs(log_file, start, dt.now())
         
-        # get the file list
-        file_list = [str(f) for f in save_dir.glob('*/bfast_outputs_*.tif')]
+    # get the file list
+    file_list = [str(f) for f in save_dir.glob('*/bfast_outputs_*.tif')]
         
-        # write a global vrt file to open all the tile at once
-        vrt_path = save_dir/f'bfast_outputs_{out_dir}.vrt'
-        ds = gdal.BuildVRT(str(vrt_path), file_list)
-        ds.FlushCache()
+    # write a global vrt file to open all the tile at once
+    vrt_path = save_dir/f'bfast_outputs_{out_dir}.vrt'
+    ds = gdal.BuildVRT(str(vrt_path), file_list)
+    ds.FlushCache()
         
-        # check that the file was effectively created (gdal doesn't raise errors)
-        if not vrt_path.is_file():
-            raise Exception(f"the vrt {vrt_path} was not created")
+    # check that the file was effectively created (gdal doesn't raise errors)
+    if not vrt_path.is_file():
+        raise Exception(f"the vrt {vrt_path} was not created")
            
     return 
 
