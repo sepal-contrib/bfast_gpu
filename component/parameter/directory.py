@@ -6,7 +6,7 @@ from pathlib import Path
 module_dir = Path('~','module_results').expanduser()
 module_dir.mkdir(exist_ok=True)
 
-result_dir = module_dir/'bfast'
+result_dir = module_dir/'bfast_parralel'
 result_dir.mkdir(exist_ok=True)
 
 # downloads directory where all SEPAL time series live

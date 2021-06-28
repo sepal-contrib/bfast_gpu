@@ -60,6 +60,67 @@ def break_to_decimal_year(idx, dates):
     else:
         break_date = dates[idx-1]
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
+    
+def bfast_stack(stack, segment_dir, save_dir, monitor_params, crop_params, out):
+    """Run the bfast model on image windows"""
+    
+    # get stack name without the tile_ prefix
+    stack_id = stack.parent.stem.replace('tile-', '')
+    
+    # read the stack file
+    with rio.open(stack) as src:
+        
+        # read the local observation date
+        with (segment_dir/'dates.csv').open() as f:
+            dates = sorted([dt.strptime(l, "%Y-%m-%d") for l in f.read().splitlines() if l.rstrip()])
+        
+        # update the crop and bfast params with the current tile dates 
+        crop_params = {k: next(d for d in dates if d > val) for k, val in crop_params.items()}
+        loc_monitor_params = {**monitor_params, 'start_monitor': next(d for d in dates if d > monitor_params['start_monitor'])}
+        
+        # split computation into small windows 
+        for window in [w for _, w in src.block_windows()]:
+    
+            data = src.read(window=window).astype(np.int16)
+            # all the nan are transformed into 0 by casting don't we want to use np.iinfo.minint16 ?
+            
+            # crop the initial data to the used dates
+            data, dates = crop_data_dates(data,  dates, **crop_params)
+    
+            # start the bfast process
+            model = BFASTMonitor(**loc_monitor_params)
+        
+            # fit the model 
+            model.fit(data, dates)
+
+            # vectorized fonction to format the results as decimal year (e.g mid 2015 will be 2015.5)
+            to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
+    
+            # slice the date to narrow it to the monitoring dates
+            start = loc_monitor_params['start_monitor']
+            end = crop_params['end']
+            monitoring_dates = dates[dates.index(start):dates.index(end)+1] # carreful slicing is x in [i,j[ 
+    
+            # compute the decimal break on the model 
+            decimal_breaks = to_decimal(model.breaks, monitoring_dates)
+    
+            # agregate the results on 2 bands
+            monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
+            
+            # get the profile from the source
+            profile = src.profile.copy()
+            profile.update(
+                driver = 'GTiff',
+                count = 2,
+                dtype = np.float32
+            )
+    
+            with rio.open(save_dir/f'bfast_outputs_{stack_id}.tif', 'w', **profile) as dst:
+                dst.write(monitoring_results, window=window)
+        
+            out.update_progress()
+        
+    return
 
 def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_params, crop_params, out):
     """Run the bfast model on image windows"""
@@ -175,64 +236,50 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # create the locks to avoid data coruption
         read_lock = threading.Lock()
         write_lock = threading.Lock()
-
-        # get the profile from the master vrt
-        with rio.open(tile_dir/'stack.vrt', GEOREF_SOURCES='INTERNAL') as src:
-            
-            profile = src.profile.copy()
-            profile.update(
-                driver = 'GTiff',
-                count = 2,
-                dtype = np.float32
-            )
         
-            # display an tile computation message
-            count = sum(1 for _ in src.block_windows())
-            out.add_live_msg(cm.bfast.sum_up.format(count, tile))
-            
-            # reset the output 
-            out.reset_progress(count, cm.bfast.progress.format(tile))
+        # count the number of windows for advancement display
+        sub_stack_files = list(folder.glob('*/tile-*/stack.vrt'))
         
-            # get the windows
-            windows = [w for _, w in src.block_windows()]
-            print(len(windows))
+        count = 0
+        for i, stack in enumerate(sub_stack_files):
             
-            # execute the concurent threads and write the results in a dst file 
-            with rio.open(file, 'w', **profile) as dst:
+            with rio.open(stack, GEOREF_SOURCES='INTERNAL') as src:
+                count += sum(1 for _ in src.block_windows())
                 
-                bfast_params = {
-                    'read_lock': read_lock, 
-                    'write_lock': write_lock,
-                    'src': src,
-                    'dst': dst,
-                    'segment_dir': tile_dir, 
-                    'monitor_params': monitor_params, 
-                    'crop_params': crop_params,
-                    'out': out
-                }
-                
-                # test outside the future
-                #for window in windows:
-                #    bfast_window(window, **bfast_params)
-                #    raise Exception ("done")
-                
-                with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
-                    executor.map(partial(bfast_window, **bfast_params), windows)
+        out.add_live_msg(cm.bfast.sum_up.format(count, tile))
+        out.reset_progress(count, cm.bfast.progress.format(tile))
         
+        # launch bfast on tiles in parralel
+        bfast_params = {
+            'save_dir': tile_save_dir,
+            'segment_dir': tile_dir, 
+            'monitor_params': monitor_params, 
+            'crop_params': crop_params,
+            'out': out
+        }
+        
+        # test outside the future
+        #for stack in sub_stack_files:
+        #    bfast_stack(stack, **bfast_params)
+        #    raise Exception ("done")
+            
+        with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
+            executor.map(partial(bfast_stack, **bfast_params), sub_stack_files)
+            
         # write in the logs that the tile is finished
         write_logs(log_file, start, dt.now())
         
-        # add the file to the file_list
-        file_list.append(str(file))
+        # get the file list
+        file_list = [str(f) for f in save_dir.glob('*/bfast_outputs_*.tif')]
         
-    # write a global vrt file to open all the tile at once
-    vrt_path = save_dir/f'bfast_outputs_{out_dir}.vrt'
-    ds = gdal.BuildVRT(str(vrt_path), file_list)
-    ds.FlushCache()
+        # write a global vrt file to open all the tile at once
+        vrt_path = save_dir/f'bfast_outputs_{out_dir}.vrt'
+        ds = gdal.BuildVRT(str(vrt_path), file_list)
+        ds.FlushCache()
         
-    # check that the file was effectively created (gdal doesn't raise errors)
-    if not vrt_path.is_file():
-        raise Exception(f"the vrt {vrt_path} was not created")
+        # check that the file was effectively created (gdal doesn't raise errors)
+        if not vrt_path.is_file():
+            raise Exception(f"the vrt {vrt_path} was not created")
            
     return 
 
