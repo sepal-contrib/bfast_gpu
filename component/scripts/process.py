@@ -160,7 +160,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         
         # set the log and output file names
         log_file = tile_save_dir/f'tile_{tile}.log'
-        file = tile_save_dir/'bfast_outputs.tif'
         
         # check the logs to see if the tile is already finished 
         if log_file.is_file():
