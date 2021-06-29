@@ -5,6 +5,7 @@ from functools import partial
 import time
 import json
 from pathlib import Path
+import os
 
 import rasterio as rio
 import numpy as np
@@ -61,8 +62,14 @@ def break_to_decimal_year(idx, dates):
         break_date = dates[idx-1]
         return break_date.year + (break_date.timetuple().tm_yday - 1)/365
     
-def bfast_stack(stack, segment_dir, save_dir, monitor_params, crop_params, out):
+def bfast_stack(enum_stack, segment_dir, save_dir, monitor_params, crop_params, out, max_workers):
     """Run the bfast model on image windows"""
+    
+    i, stack = enum_stack
+    
+    # set the GPU that will be used to run the process 
+    # I guess that they will all take the same amount of time
+    worker = i % max_workers
     
     # get stack name without the tile_ prefix
     stack_id = stack.parent.stem.replace('tile-', '')
@@ -76,7 +83,14 @@ def bfast_stack(stack, segment_dir, save_dir, monitor_params, crop_params, out):
         
         # update the crop and bfast params with the current tile dates 
         crop_params = {k: next(d for d in dates if d > val) for k, val in crop_params.items()}
-        loc_monitor_params = {**monitor_params, 'start_monitor': next(d for d in dates if d > monitor_params['start_monitor'])}
+        loc_monitor_params = {
+            **monitor_params, 
+            'start_monitor': next(d for d in dates if d > monitor_params['start_monitor']),
+            'device_id': worker
+        }
+        
+        # start the bfast process
+        model = BFASTMonitor(**loc_monitor_params)
         
         # split computation into small windows 
         for window in [w for _, w in src.block_windows()]:
@@ -86,9 +100,6 @@ def bfast_stack(stack, segment_dir, save_dir, monitor_params, crop_params, out):
             
             # crop the initial data to the used dates
             data, dates = crop_data_dates(data,  dates, **crop_params)
-    
-            # start the bfast process
-            model = BFASTMonitor(**loc_monitor_params)
         
             # fit the model 
             model.fit(data, dates)
@@ -180,22 +191,26 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         out.add_live_msg(cm.bfast.sum_up.format(count, tile))
         out.reset_progress(count, cm.bfast.progress.format(tile))
         
+        # get the number of CPU available
+        max_workers = len(os.sched_getaffinity(0))
+        
         # launch bfast on tiles in parralel
         bfast_params = {
             'save_dir': tile_save_dir,
             'segment_dir': tile_dir, 
             'monitor_params': monitor_params, 
             'crop_params': crop_params,
-            'out': out
+            'out': out,
+            'max_workers': max_workers
         }
         
         # test outside the future
-        #for stack in sub_stack_files:
-        #    bfast_stack(stack, **bfast_params)
-        #    raise Exception ("done")
+        for stack in enumerate(sub_stack_files):
+            bfast_stack(stack, **bfast_params)
+            raise Exception ("done")
             
-        with futures.ThreadPoolExecutor() as executor: # use all the available CPU/GPU
-            executor.map(partial(bfast_stack, **bfast_params), sub_stack_files)
+        with futures.ThreadPoolExecutor(max_workers=max_workers) as executor: # https://stackoverflow.com/a/55423170/6734243
+            executor.map(partial(bfast_stack, **bfast_params), enumerate(sub_stack_files))
             
         # write in the logs that the tile is finished
         write_logs(log_file, start, dt.now())

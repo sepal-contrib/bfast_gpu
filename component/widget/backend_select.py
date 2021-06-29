@@ -9,7 +9,8 @@ class BackendSelect(sw.SepalWidget, v.Select):
     
     BACKENDS = [
         {'text': "Python", 'value': 'python', 'disabled': False},
-        {'text': 'opencl', 'value': 'opencl', 'disabled': False}
+        {'text': 'opencl', 'value': 'opencl', 'disabled': False},
+        {'text': 'cupy',   'value': 'cupy',   'disabled': False}
     ]
     
     def __init__(self, **kwargs):
