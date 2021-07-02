@@ -73,7 +73,7 @@ Now you can change the parameters to fit the requirements of your analysis:
         
 -   :code:`select tiles to use`: This is the tiles that you want to use in your analysis. they default to :code:`all` but you can deselect the one that you don't need.
 -   :code:`number of harmonic`: Specifies the order of the harmonic term, defaulting to 3.
--   :code:`frequency of seasonal model`: The frequency for the seasonal model.
+-   :code:`frequency of seasonal model`: The frequency for the seasonal model set here in month
 -   :code:`add trend`: Whether a trend offset term shall be used or not
 -   :code:`Monitoring dates`: The year that marks the end of the historical period and the start of the monitoring period. The default value does not let enough images in the historical stable perdiod
 

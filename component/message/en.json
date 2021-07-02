@@ -28,7 +28,7 @@
             "no_poly": "no harmonic degree have been provided"
         },
         "freq": {
-            "label": "frequency of seasonal model (days)",
+            "label": "frequency of seasonal model (month)",
             "no_freq": "No frequency for seasonal model have been provided"
         },
         "trend": {

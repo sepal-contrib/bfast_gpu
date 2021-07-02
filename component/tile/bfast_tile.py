@@ -20,7 +20,7 @@ class BfastTile(sw.Tile):
         self.out_dir = cw.OutDirSelect()
         self.tiles = cw.TilesSelect()
         self.poly = v.Select(label=cm.widget.harmonic.label, v_model=3, items=[i for i in range(3,11)])
-        self.freq = v.Slider(label=cm.widget.freq.label, v_model=365, min=1, max=365, thumb_label="always", class_='mt-5')
+        self.freq = v.Slider(label=cm.widget.freq.label, v_model=12, min=1, max=12, thumb_label="always", class_='mt-5')
         self.trend = v.Switch(v_model=False, label=cm.widget.trend.label)
         self.hfrac = v.Select(label=cm.widget.hfrac.label, v_model=.25, items=[.25, .5, 1.])
         self.level = v.Slider(label=cm.widget.level.label, v_model=.95, step=.001, min=.95, max=1, thumb_label="always", class_='mt-5')
@@ -33,6 +33,7 @@ class BfastTile(sw.Tile):
             v.ExpansionPanel(children=[
                 v.ExpansionPanelHeader(children=[cm.widget.advance_params]),
                 v.ExpansionPanelContent(children=[
+                    v.Flex(xs12=True, children=[self.freq]),
                     v.Flex(xs12=True, children=[self.hfrac]),
                     v.Flex(xs12=True, children=[self.level]),
                     v.Flex(xs12=True, children=[self.backend])
@@ -47,7 +48,7 @@ class BfastTile(sw.Tile):
             inputs=[
                 self.folder, self.out_dir, self.tiles,
                 v.Html(tag="h2", children=[cm.bfast.process]),
-                self.poly, self.freq, self.trend, advance_params,
+                self.poly, self.trend, advance_params,
                 v.Html(tag="h2", children=[cm.bfast.periods]),
                 self.history,self.monitoring
             ],
@@ -71,7 +72,7 @@ class BfastTile(sw.Tile):
         out_dir = self.out_dir.v_model
         tiles = self.tiles.v_model
         poly = self.poly.v_model
-        freq = self.freq.v_model
+        freq = min(self.freq.v_model*31,365)
         trend = self.trend.v_model
         hfrac = self.hfrac.v_model
         level = self.level.v_model
