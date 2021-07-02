@@ -99,7 +99,7 @@ class BfastTile(sw.Tile):
         cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.alert)
         
         # display the end of computation message
-        self.alert.add_live_msg(cm.bfast.complete.format(out_dir), 'success')
+        self.alert.add_live_msg(cm.bfast.complete.format(str(cp.result_dir/out_dir)), 'success')
         
     def _on_folder_change(self, change):
         """
