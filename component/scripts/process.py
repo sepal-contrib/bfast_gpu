@@ -80,29 +80,11 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # crop the initial data to the used dates
     data, dates = crop_data_dates(data,  dates, **crop_params)
     
-    #with write_lock: 
-    #    out.add_live_msg("creating the model")
-    
     # start the bfast process
     model = BFASTMonitor(**loc_monitor_params)
-    
-    #with write_lock: 
-    #    out.add_live_msg("fitting the model")
         
     # fit the model 
     model.fit(data, dates)
-    
-    #with write_lock: 
-    #    out.add_live_msg("check for NaN")
-    
-    # test if magnitude exist
-    # if yes log the incriminated window parameter to further investigation
-    #if np.isnan(model.magnitudes).all():
-    #    
-    #    with write_lock: 
-    #        out.add_live_msg("write debug info")
-    #       
-    #    debug(data, dates, segment_dir, loc_monitor_params, write_lock)
 
     # vectorized fonction to format the results as decimal year (e.g mid 2015 will be 2015.5)
     to_decimal = np.vectorize(break_to_decimal_year, excluded=[1])
@@ -116,7 +98,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     decimal_breaks = to_decimal(model.breaks, monitoring_dates)
     
     # agregate the results on 2 bands
-    monitoring_results = np.stack((decimal_breaks, model.magnitudes)).astype(np.float32)
+    monitoring_results = np.stack((decimal_breaks, model.magnitudes, model.valids)).astype(np.float32)
     
     with write_lock:
         dst.write(monitoring_results, window=window)
@@ -182,7 +164,7 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
             profile = src.profile.copy()
             profile.update(
                 driver = 'GTiff',
-                count = 2,
+                count = 3,
                 dtype = np.float32
             )
         
@@ -195,7 +177,6 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         
             # get the windows
             windows = [w for _, w in src.block_windows()]
-            print(len(windows))
             
             # execute the concurent threads and write the results in a dst file 
             with rio.open(file, 'w', **profile) as dst:

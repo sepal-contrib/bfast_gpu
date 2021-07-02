@@ -134,7 +134,13 @@ The process wil start shortly notifying you of it's advancment tile by tyle in t
 The module provide the following :code:`.vrt` outputs:
 -   :code:`~/module_results/bfast/[name_of_input]/[bfast_params]/bfast_outputs.vrt`
 
-It is a 2 band raster with band 1 being the breakpoints in decimal year format and on band 2, the magnitude of change. This raster has the exact same dimension as the input raste`
+It is a 3 band raster with :
+
+-   band 1 being the breakpoints in decimal year format
+-   band 2, the magnitude of change
+-   band 3, the validity of the pixel model
+
+This raster has the exact same dimension as the input raste`
 
 Example
 ^^^^^^^
