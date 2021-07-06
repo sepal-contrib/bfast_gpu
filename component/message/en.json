@@ -68,5 +68,12 @@
         "complete": "BFAST Output saved in: \"{}\"",
         "progress": "Images analysed in Tile {}",
         "skip": "Skipping tile {}"
+    },
+    "display": {
+        "btn": "display threshold map",
+        "title": "Result map",        
+        "legend": "Magnitude of change",
+        "no_bfast": "you need to compute BFAST first",
+        "layer": "bfast threshold"
     }
 }

@@ -10,6 +10,7 @@ from traitlets import Any
 import rasterio as rio
 
 from component import parameter as cp
+from component.message import cm
 
 class ResultTile(sw.Tile):
     
@@ -20,16 +21,16 @@ class ResultTile(sw.Tile):
         # create the map
         self.m = sm.SepalMap()
         self.m.add_legend( 
-            legend_title = 'Magnitude of change',
+            legend_title = cm.display.legend,
             legend_dict={k: c for k, c in cp.legend.values()},
             position='topleft'
         )
         
         super().__init__(
             'result_tile',
-            'Result map',
+            cm.display.title,
             inputs = [v.Flex(class_='mt-5 mb-5', children=[self.m])],
-            btn = sw.Btn('display threshold map'),
+            btn = sw.Btn(cm.display.btn),
             alert = sw.Alert()
         )
         
@@ -47,12 +48,12 @@ class ResultTile(sw.Tile):
     def _compute_map(self, widget, event, data):
         """compute the threshold data map and display it on the interactive map"""
         
-        if not self.out_dir: raise Exception("you need to compute BFAST first")
+        if not self.out_dir: raise Exception(cm.display.no_bfast)
         
         # check if the bfast_output vrt exist
         bfast_output = self.out_dir/f'bfast_outputs_{self.out_dir.parent.stem}.vrt'
         
-        if not bfast_output.is_file(): raise Exception("you need to compute BFAST first")
+        if not bfast_output.is_file(): raise Exception(cm.display.no_bfast)
         
         # check if the threshold map exist
         threshold_output = bfast_output.parent/f'threshold_{self.out_dir.parent.stem}.tif'
@@ -92,7 +93,7 @@ class ResultTile(sw.Tile):
         # display it in the interactive map        
         self.m.add_raster(
             threshold_output, 
-            layer_name='bfast threshold', 
+            layer_name=cm.display.layer, 
             colormap=ListedColormap([cp.legend[i][1] for i in sorted(cp.legend)]),  
             colorbar_position=False
         )
