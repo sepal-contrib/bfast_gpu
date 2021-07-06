@@ -8,8 +8,9 @@ from component.message import cm
 class BackendSelect(sw.SepalWidget, v.Select):
     
     BACKENDS = [
-        {'text': "Python", 'value': 'python', 'disabled': False},
-        {'text': 'opencl', 'value': 'opencl', 'disabled': False}
+        {'text': "NumPy", 'value': 'python', 'disabled': False},
+        {'text': 'OpenCL', 'value': 'opencl', 'disabled': False},
+        {'text': 'CuPy', 'value': 'cupy', 'disabled': False}
     ]
     
     def __init__(self, **kwargs):
