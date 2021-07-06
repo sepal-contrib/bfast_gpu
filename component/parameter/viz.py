@@ -1,11 +1,11 @@
 legend = {
-    "O std": "#f5f5dc",
-    "-1 std": "#ffff00",
-    "-2 std": "#ffa500",
-    "-4 std": "#ff0000",
-    "-5 std": "#8b0000",
-    "1 std": "#98fb98",
-    "2 std": "#008000",
-    "3 std": "#228b22",
-    "4 std": "#006400"
+    9: ("positive very high", "#006400"),
+    8: ("positive high", "#228b22"),
+    7: ("positive medium", "#008000"),
+    6: ("positive low", "#98fb98"),
+    1: ("no change", "#f5f5dc"),
+    2: ("negative low", "#ffff00"),
+    3: ("negative medium", "#ffa500"),
+    4: ("negative high", "#ff0000"),
+    5: ("negative very high", "#8b0000")
 }

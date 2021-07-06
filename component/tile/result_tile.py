@@ -20,7 +20,8 @@ class ResultTile(sw.Tile):
         # create the map
         self.m = sm.SepalMap()
         self.m.add_legend( 
-            legend_dict=cp.legend, 
+            legend_title = 'Magnitude of change',
+            legend_dict={k: c for k, c in cp.legend.values()},
             position='topleft'
         )
         
@@ -92,7 +93,7 @@ class ResultTile(sw.Tile):
         self.m.add_raster(
             threshold_output, 
             layer_name='bfast threshold', 
-            colormap=ListedColormap(cp.legend.values()),  
+            colormap=ListedColormap([cp.legend[i][1] for i in sorted(cp.legend)]),  
             colorbar_position=False
         )
         
