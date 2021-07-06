@@ -3,7 +3,8 @@
         "title": "BFAST GPU",
         "drawer_item": {
             "about": "About",
-            "bfast": "BFAST process"
+            "bfast": "BFAST process",
+            "display": "Map"
         }
     },
     "widget": {
