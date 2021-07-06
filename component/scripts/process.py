@@ -214,8 +214,9 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
     # check that the file was effectively created (gdal doesn't raise errors)
     if not vrt_path.is_file():
         raise Exception(f"the vrt {vrt_path} was not created")
-           
-    return 
+    
+    # return a str for the traitlets 
+    return str(save_dir)
 
 def write_logs(log_file, start, end):
     

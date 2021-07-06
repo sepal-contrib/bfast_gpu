@@ -4,6 +4,7 @@ from datetime import datetime as dt
 import ipyvuetify as v
 from sepal_ui import sepalwidgets as sw 
 from sepal_ui.scripts import utils as su
+from traitlets import Any
 
 from component import widget as cw
 from component.message import cm
@@ -11,6 +12,8 @@ from component import scripts as cs
 from component import parameter as cp
 
 class BfastTile(sw.Tile):
+    
+    dir_ = Any(None).tag(sync=True)
     
     def __init__(self):
         
@@ -63,7 +66,7 @@ class BfastTile(sw.Tile):
         self.monitoring.observe(self._check_periods, 'v_model')
         self.history.observe(self._check_periods, 'v_model')
        
-    @su.loading_button(debug=True)
+    @su.loading_button(debug=False)
     def _start_process(self, widget, event, data):
         """start the bfast process"""
         
@@ -97,7 +100,7 @@ class BfastTile(sw.Tile):
         if not (history < monitoring[0] < monitoring[1]): return self.alert.add_msg(cm.widget.monitoring.bad_order, 'error') 
             
         # run the bfast process
-        cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.alert)
+        self.dir_ = cs.run_bfast(Path(folder), out_dir, tiles, monitoring, history, freq, poly, hfrac, trend, level, backend, self.alert)
         
         # display the end of computation message
         self.alert.add_live_msg(cm.bfast.complete.format(str(cp.result_dir/out_dir)), 'success')

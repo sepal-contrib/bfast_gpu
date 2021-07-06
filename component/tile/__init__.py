@@ -3,3 +3,4 @@
 
 # if you use a module import all the functions here to only have 1 call to make
 from .bfast_tile import *
+from .result_tile import *
