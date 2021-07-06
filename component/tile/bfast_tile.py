@@ -66,7 +66,7 @@ class BfastTile(sw.Tile):
         self.monitoring.observe(self._check_periods, 'v_model')
         self.history.observe(self._check_periods, 'v_model')
        
-    @su.loading_button(debug=False)
+    @su.loading_button(debug=True)
     def _start_process(self, widget, event, data):
         """start the bfast process"""
         

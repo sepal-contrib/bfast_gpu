@@ -44,7 +44,7 @@ class ResultTile(sw.Tile):
         
         return self
         
-    @loading_button(debug=True)
+    @loading_button(debug=False)
     def _compute_map(self, widget, event, data):
         """compute the threshold data map and display it on the interactive map"""
         

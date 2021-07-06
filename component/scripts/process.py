@@ -67,7 +67,7 @@ def bfast_window(window, read_lock, write_lock, src, dst, segment_dir, monitor_p
     # read in a read_lock to avoid duplicate reading and corruption of the data
     with read_lock:
         data = src.read(window=window).astype(np.int16)
-        # all the nan are transformed into 0 by casting don't we want to use np.iinfo.minint16 ? 
+        # all the nan are transformed into 0 by casting don't we want to use np.iinfo.minint16 ?
     
     # read the local observation date
     with (segment_dir/'dates.csv').open() as f:
@@ -161,25 +161,28 @@ def run_bfast(folder, out_dir, tiles, monitoring, history, freq, k, hfrac, trend
         # get the profile from the master vrt
         with rio.open(tile_dir/'stack.vrt', GEOREF_SOURCES='INTERNAL') as src:
             
+            windows_size = 1024
+            
             profile = src.profile.copy()
             profile.update(
+                blockxsize = windows_size, 
+                blockysize = windows_size,
                 driver = 'GTiff',
                 count = 3,
                 dtype = np.float32
             )
-        
-            # display an tile computation message
-            count = sum(1 for _ in src.block_windows())
-            out.add_live_msg(cm.bfast.sum_up.format(count, tile))
-            
-            # reset the output 
-            out.reset_progress(count, cm.bfast.progress.format(tile))
-        
-            # get the windows
-            windows = [w for _, w in src.block_windows()]
             
             # execute the concurent threads and write the results in a dst file 
             with rio.open(file, 'w', **profile) as dst:
+                
+                # get the windows
+                windows = [w for _, w in dst.block_windows()]
+
+                # display an tile computation message
+                out.add_live_msg(cm.bfast.sum_up.format(len(windows), tile))
+
+                # reset the output 
+                out.reset_progress(len(windows), cm.bfast.progress.format(tile))
                 
                 bfast_params = {
                     'read_lock': read_lock, 
