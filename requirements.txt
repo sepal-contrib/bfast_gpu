@@ -21,4 +21,4 @@ numpy==1.19.5
 matplotlib==3.3.4
 traitlets==4.3.3
 cupy-cuda112
-git+git://github.com/12rambau/bfast.git#egg=bfast
+git+git://github.com/12rambau/bfast.git
