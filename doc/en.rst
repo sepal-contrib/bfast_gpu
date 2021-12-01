@@ -6,7 +6,7 @@ This document provides usage instructions for the GPU implementation of BFAST, h
 Introduction 
 ------------
 
-Large amounts of satellite data are now becoming available, which, in combination with appropriate change detection methods, offer the opportunity to derive accurate information on timing and location of disturbances such as deforestation events across the earth surface. Typical scenarios require the analysis of billions of image patches/pixels, which can become very expensive from a computational point of view. The `bfast package <https://pypi.org/project/bfast/>`_ provides an efficient massively-parallel implementation for one of the state-of-the-art change detection methods called `Breaks For Additive Season and Trend (BFASTmonito) <http://bfast.r-forge.r-project.org>` proposed by Verbesselt et al.
+Large amounts of satellite data are now becoming available, which, in combination with appropriate change detection methods, offer the opportunity to derive accurate information on timing and location of disturbances such as deforestation events across the earth surface. Typical scenarios require the analysis of billions of image patches/pixels, which can become very expensive from a computational point of view. The `bfast package <https://pypi.org/project/bfast/>`_ provides an efficient massively-parallel implementation for one of the state-of-the-art change detection methods called `Breaks For Additive Season and Trend (BFASTmonitor) <http://bfast.r-forge.r-project.org>` proposed by Verbesselt et al.
 
 .. figure:: https://raw.githubusercontent.com/12rambau/bfast_gpu/master/doc/img/bfastmonitor_1.png
 
