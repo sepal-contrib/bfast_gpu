@@ -22,3 +22,4 @@ matplotlib==3.3.4
 traitlets==4.3.3
 cupy-cuda112
 git+git://github.com/12rambau/bfast.git
+cryptography>=2.1.4
