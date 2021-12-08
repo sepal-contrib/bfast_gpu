@@ -7,5 +7,5 @@ legend = {
     2: ("negative low", "#ffff00"),
     3: ("negative medium", "#ffa500"),
     4: ("negative high", "#ff0000"),
-    5: ("negative very high", "#8b0000")
+    5: ("negative very high", "#8b0000"),
 }
