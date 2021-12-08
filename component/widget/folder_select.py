@@ -7,9 +7,9 @@ from component.message import cm
 
 class FolderSelect(sw.FileInput):
     
-    def __init__(self):
+    def __init__(self, folder=cp.down_dir):
         
-        super().__init__([''], label=cm.widget.folder.label, folder=cp.down_dir)
+        super().__init__([''], label=cm.widget.folder.label, folder=folder)
         
     def _on_file_select(self, change):
         """Dispatch the behaviour between file selection and folder change"""

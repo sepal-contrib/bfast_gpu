@@ -3,7 +3,8 @@
         "title": "BFAST GPU",
         "drawer_item": {
             "about": "About",
-            "bfast": "BFAST process"
+            "bfast": "BFAST process",
+            "display": "Map"
         }
     },
     "widget": {
@@ -28,7 +29,7 @@
             "no_poly": "no harmonic degree have been provided"
         },
         "freq": {
-            "label": "frequency of seasonal model (days)",
+            "label": "frequency of seasonal model (month)",
             "no_freq": "No frequency for seasonal model have been provided"
         },
         "trend": {
@@ -68,5 +69,12 @@
         "complete": "BFAST Output saved in: \"{}\"",
         "progress": "Images analysed in Tile {}",
         "skip": "Skipping tile {}"
+    },
+    "display": {
+        "btn": "display threshold map",
+        "title": "Result map",        
+        "legend": "Magnitude of change",
+        "no_bfast": "you need to compute BFAST first",
+        "layer": "bfast threshold"
     }
 }

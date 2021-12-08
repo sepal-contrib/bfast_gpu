@@ -8,19 +8,21 @@ from component.message import cm
 class BackendSelect(sw.SepalWidget, v.Select):
     
     BACKENDS = [
-        {'text': "Python", 'value': 'python', 'disabled': False},
-        {'text': 'opencl', 'value': 'opencl', 'disabled': False}
+        {'text': "NumPy", 'value': 'python', 'disabled': False},
+        {'text': 'OpenCL', 'value': 'opencl', 'disabled': False},
+        {'text': 'CuPy', 'value': 'cupy', 'disabled': False}
     ]
     
     def __init__(self, **kwargs):
         
         # guess if the current instance is a gpu and adapt the backend items accordingly
         items = self.BACKENDS
-        value = items[1]['value']
+        value = items[2]['value']
         hint = None
         
         if not self.is_gpu():
             items[1]['disabled'] = True
+            items[2]['disabled'] = True
             value = items[0]['value']
             self.hint = cm.widget.backend.hint
             self.persistent_hint = True

@@ -43,5 +43,7 @@ class CustomAlert(sw.Alert):
         # remove the message
         self.add_msg('')
         
+        super().update_progress(0, self.progress_msg)
+        
         return self
         
