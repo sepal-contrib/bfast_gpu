@@ -20,7 +20,7 @@ class ResultTile(sw.Tile):
     def __init__(self, bfast_tile):
 
         # create the map
-        self.m = sm.SepalMap()
+        self.m = sm.SepalMap(gee=False)
         self.m.add_legend(
             legend_title=cm.display.legend,
             legend_dict={k: c for k, c in cp.legend.values()},
