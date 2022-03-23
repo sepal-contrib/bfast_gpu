@@ -14,6 +14,8 @@ pyproj==3.3.0
 sepal_ui==2.0.6
 
 # custom libs
+click<8,>=4.0 # to stay inlined with ipywidgets
+ipywidgets==7.6.5 # cannot use newer version there are not compatible with voila 3.1.0
 numpy==1.22.1
 pandas==1.4.0
 rasterio==1.1.5
