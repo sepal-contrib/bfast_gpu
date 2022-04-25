@@ -20,6 +20,10 @@ Usage
 .. warning::
 
     **prerequist**: before launching the bfast module, you need to have at least 1 time series in SEPAL folders
+    
+.. danger:: 
+
+    If, while using the app, a user come across an error starting with "Unable to allocate ...", it means that the instance used to run the application is to small. You'll need to start a bigger instance and restart the application.
 
 Set up
 ^^^^^^
