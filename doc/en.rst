@@ -20,11 +20,15 @@ Usage
 .. warning::
 
     **prerequist**: before launching the bfast module, you need to have at least 1 time series in SEPAL folders
+    
+.. danger:: 
+
+    If, while using the app, a user come across an error starting with "Unable to allocate ...", it means that the instance used to run the application is to small. You'll need to start a bigger instance and restart the application.
 
 Set up
 ^^^^^^
 
-To launch the app please follow the `SEPAL registration steps <https://docs.sepal.io/en/latest/setup/register.html>`_. Then open a GPU instance in your terminal (:code:`g4`or :code:`g8`). Then move to the SEPAL Apps dashboard (purple wrench icon on the left side panel), search for and click on **bfast GPU**. 
+To launch the app please follow the `SEPAL registration steps <https://docs.sepal.io/en/latest/setup/register.html>`_. Then open a GPU instance in your terminal (:code:`g4` or :code:`g8`). Then move to the SEPAL Apps dashboard (purple wrench icon on the left side panel), search for and click on **bfast GPU**. 
 
 The application should launch itself in the **BFAST process** section. On the left side the navdrawer will help you navigate between the different pages of the app. If you click on :code:`wiki`, :code:`bug report` or :code:`code source`, you will be redirected to the corresponding webpage. 
 
