@@ -1,3 +1,4 @@
+from natsort import natsorted
 from sepal_ui import sepalwidgets as sw
 import ipyvuetify as v
 
@@ -14,6 +15,7 @@ class TilesSelect(sw.SepalWidget, v.Select):
         self.chips = True
         self.multiple = True
         self.deletable_chips = True
+        self.clearable = True
 
         # create the widget
         super().__init__(**kwargs)
@@ -30,7 +32,7 @@ class TilesSelect(sw.SepalWidget, v.Select):
         """create selectable items that corresponds to the folders inside the provided folder"""
 
         # update items
-        self.items = sorted([d.stem for d in folder.glob("*/")])
+        self.items = natsorted([d.stem for d in folder.glob("*/")])
 
         # by default selec all available tiles
         self.v_model = self.items
