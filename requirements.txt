@@ -1,22 +1,17 @@
 # these libs are requested to build application env
-jupyter
 voila
 toml
 
 # the base lib to run any sepal_ui based app
 # don't forget to fix it to a specific version when you're app is ready
-sepal_ui==2.0.6
+# This version contains file input improements and a fix for the map resize
+git+https://github.com/12rambau/sepal_ui.git@sepal_pre_release
 
 # custom libs
-click<8,>=4.0
-ipywidgets==7.6.5
-numpy==1.22.1
-pandas==1.4.0
-rasterio==1.1.5
-ipyvuetify==1.8.1
-matplotlib==3.1.2
-traitlets==5.1.1
+numpy
+pandas
+rasterio
+matplotlib
 cupy-cuda114
-cryptography>=2.1.4
-git+https://github.com/12rambau/bfast.git
+git+https://github.com/dfguerrerom/bfast.git
 localtileserver
