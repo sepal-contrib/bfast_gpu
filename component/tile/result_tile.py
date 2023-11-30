@@ -14,11 +14,9 @@ from component.message import cm
 
 
 class ResultTile(sw.Tile):
-
     out_dir = Any(None).tag(sync=True)
 
     def __init__(self, bfast_tile):
-
         # create the map
         self.m = sm.SepalMap(gee=False)
         self.m.add_legend(
@@ -40,12 +38,11 @@ class ResultTile(sw.Tile):
         self.btn.on_event("click", self._compute_map)
 
     def _change_dir(self, change):
-
         self.out_dir = change["new"]
 
         return self
 
-    @loading_button(debug=True)
+    @loading_button()
     def _compute_map(self, widget, event, data):
         """compute the threshold data map and display it on the interactive map"""
 
@@ -62,9 +59,7 @@ class ResultTile(sw.Tile):
         # check if the threshold map exist
         threshold_output = bfast_output.parent / f"threshold_{out_dir.parent.stem}.tif"
         if not threshold_output.is_dir():
-
             with rio.open(bfast_output, GEOREF_SOURCES="INTERNAL") as src:
-
                 # get the profile
                 profile = src.profile.copy()
                 profile.update(driver="GTiff", count=1, dtype=np.int8)
