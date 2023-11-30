@@ -20,7 +20,7 @@ class ResultTile(sw.Tile):
         # create the map
         self.m = sm.SepalMap(gee=False)
         self.m.add_legend(
-            legend_title=cm.display.legend,
+            title=cm.display.legend,
             legend_dict={k: c for k, c in cp.legend.values()},
             position="topleft",
         )
