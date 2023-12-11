@@ -2,10 +2,7 @@
 voila
 toml
 
-# the base lib to run any sepal_ui based app
-# don't forget to fix it to a specific version when you're app is ready
-# This version contains file input improements and a fix for the map resize
-git+https://github.com/12rambau/sepal_ui.git@sepal_pre_release
+sepal_ui==2.17
 
 # custom libs
 numpy
