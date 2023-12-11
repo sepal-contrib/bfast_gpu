@@ -13,11 +13,9 @@ from component import parameter as cp
 
 
 class BfastTile(sw.Tile):
-
     dir_ = Any(None).tag(sync=True)
 
     def __init__(self):
-
         # create the different widgets
         # I will not use Io as the information doesn't need to be communicated to any other tile
         self.folder = cw.FolderSelect()
@@ -98,7 +96,7 @@ class BfastTile(sw.Tile):
         self.monitoring.observe(self._check_periods, "v_model")
         self.history.observe(self._check_periods, "v_model")
 
-    @su.loading_button(debug=True)
+    @su.loading_button()
     def _start_process(self, widget, event, data):
         """start the bfast process"""
 
@@ -182,7 +180,6 @@ class BfastTile(sw.Tile):
 
         # check if it's a time series folder
         if not self.folder.is_valid_ts():
-
             # reset the non working inputs
             self.monitoring.disable()
             self.history.disable()
