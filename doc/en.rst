@@ -171,5 +171,3 @@ Here you'll find an example of two bands over the Juaboso Region in Ghana with a
 .. figure:: https://raw.githubusercontent.com/12rambau/bfast_gpu/master/utils/breaks.png
 
     Breaks masked in the centre of the region, displayed with a viridis colormap, values in [2017.26, 2019.98]
-    
-.. custom-edit:: https://raw.githubusercontent.com/sepal-contrib/bfast_gpu/release/doc/en.rst
