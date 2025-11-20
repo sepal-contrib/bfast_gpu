@@ -9,6 +9,7 @@ dependencies:
   - numpy
   - pandas
   - rasterio
+  - gdal=3.8.3
   - matplotlib
   - cupy
   - pip
