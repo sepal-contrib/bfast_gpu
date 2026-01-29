@@ -8,7 +8,6 @@ dependencies:
   - toml
   - numpy
   - pandas
-  - rasterio
   - gdal=3.8.3
   - matplotlib
   - cupy
@@ -17,3 +16,4 @@ dependencies:
     - git+https://github.com/12rambau/sepal_ui.git@sepal_pre_release
     - git+https://github.com/dfguerrerom/bfast.git
     - git+https://github.com/openforis/earthengine-api.git@v1.1.5rc0#egg=earthengine-api&subdirectory=python
+    - rasterio<=1.4.3
